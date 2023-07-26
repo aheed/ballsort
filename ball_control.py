@@ -1,14 +1,20 @@
 import asyncio
 
+class IllegalBallControlStateError(Exception):
+    "Raised when a control command is issued while a command for movement along the same axis is still being executed"
+    pass
+
 class BallControl(object):
 
     MIN_X = 0
     MIN_Y = 0
     MAX_X = 3
     MAX_Y = 4
-    delay_mult = 0.8
+    delay_mult = 1.0
     x = 0
     y = 0
+    moving_horizontally = False
+    moving_vertically = False
 
     #def __init__(self: BallControl, delay_multiplier: float) ->  None:
     #    self.delay_multiplier = delay_multiplier
@@ -27,5 +33,45 @@ class BallControl(object):
 
     @classmethod
     async def move_relative(cls, x: int, y: int = 0):
+        if (cls.x == x and cls.y == y):
+            return
         await cls.__delay(1.0)
-        cls.__set_position(cls.x + x, cls.y + y)    
+        cls.__set_position(cls.x + x, cls.y + y)
+
+    @classmethod
+    async def move_horizontally(cls, distance: int):
+        if (0 == distance):
+            return
+        if (cls.moving_horizontally):
+            raise IllegalBallControlStateError("Already moving horizontally")
+        cls.moving_horizontally = True
+        try:
+            await cls.__delay(1.0)
+            cls.__set_position(cls.x + distance)
+        finally:
+            cls.moving_horizontally = False
+
+    @classmethod
+    async def move_vertically(cls, distance: int):
+        if (0 == distance):
+            return
+        if (cls.moving_vertically):
+            raise IllegalBallControlStateError("Already moving vertically")
+        cls.moving_vertically = True
+        try:
+            await cls.__delay(1.0)
+            cls.__set_position(0, cls.y + distance)
+        finally:
+            cls.moving_vertically = False
+            
+    @classmethod
+    def move_horizontally_sync(cls, distance: int):
+        asyncio.run(cls.move_horizontally(distance))
+
+    @classmethod
+    def move_relative_sync(cls, x: int, y: int = 0):
+        asyncio.run(cls.move_relative(x, y))
+
+    @classmethod
+    def get_position(cls) -> tuple[int, int]:
+        return cls.x, cls.y
