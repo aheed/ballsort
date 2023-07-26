@@ -1,6 +1,6 @@
 import asyncio
 from ball_control import BallControl
-from ball_control_sim import BallControlSim
+from control_factory import get_control_sim
 
 def single_command(bc: BallControl):
     bc.move_relative_sync(1, 0)
@@ -49,7 +49,7 @@ def main():
     #sequence1()
     #sequence2()
     #example_async()
-    bcontrol = BallControlSim()
+    bcontrol = get_control_sim()
     example_concurrent(bcontrol)
 
 if __name__ == "__main__":
