@@ -46,8 +46,7 @@ class BallControl(object):
             raise IllegalBallControlStateError("Already moving horizontally")
         cls.moving_horizontally = True
         try:
-            await cls.__delay(1.0)
-            cls.__set_position(cls.x + distance)
+            await cls.move_relative(distance)
         finally:
             cls.moving_horizontally = False
 
@@ -59,14 +58,17 @@ class BallControl(object):
             raise IllegalBallControlStateError("Already moving vertically")
         cls.moving_vertically = True
         try:
-            await cls.__delay(1.0)
-            cls.__set_position(0, cls.y + distance)
+            await cls.move_relative(0, distance)
         finally:
             cls.moving_vertically = False
             
     @classmethod
     def move_horizontally_sync(cls, distance: int):
         asyncio.run(cls.move_horizontally(distance))
+    
+    @classmethod
+    def move_vertically_sync(cls, distance: int):
+        asyncio.run(cls.move_vertically(distance))
 
     @classmethod
     def move_relative_sync(cls, x: int, y: int = 0):

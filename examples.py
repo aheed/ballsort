@@ -14,14 +14,41 @@ def sequence1():
     print(f"x:{x} y:{y}")
 
 def sequence2():
-    BallControl.move_horizontally_sync(1)
-    BallControl.move_horizontally_sync(1)
-    BallControl.move_horizontally_sync(-3)
+    BallControl.move_vertically_sync(2)    
+    BallControl.move_horizontally_sync(3)
+    BallControl.move_vertically_sync(-2)
+    BallControl.move_horizontally_sync(-1)
+
+async def sequence_async():
+    await BallControl.move_vertically(2)
+    await BallControl.move_horizontally(3)
+    await BallControl.move_vertically(-2)
+    await BallControl.move_horizontally(-1)
+
+def example_async():
+    asyncio.run(sequence_async())
+
+async def sequence_concurrent():
+    t1 = asyncio.create_task(BallControl.move_vertically(2))
+    t2 = asyncio.create_task(BallControl.move_horizontally(3))
+    await t1
+    await t2
+
+    t3 = asyncio.create_task(BallControl.move_vertically(-2))
+    t4 = asyncio.create_task(BallControl.move_horizontally(-1))
+    await t3
+    await t4
+
+def example_concurrent():
+    asyncio.run(sequence_concurrent())
+    
 
 def main():
-    single_command()
+    #single_command()
     #sequence1()
-    sequence2()
+    #sequence2()
+    #example_async()
+    example_concurrent()
 
 if __name__ == "__main__":
     import time
