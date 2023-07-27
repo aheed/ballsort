@@ -11,7 +11,7 @@
     </style>
   </head>
   <body>
-    <svg height="500" width="500">
+    <svg id="movers-svg" height="500" width="500">
         <circle id="c1" class="h-move" cx="50" cy="50" r="16" stroke="black" stroke-width="3" fill="red" />
         Sorry, your browser does not support inline SVG.  
     </svg>
@@ -22,10 +22,30 @@
       const statusMsg = document.querySelector("#status-msg");
       const c1 = document.querySelector("#c1");
       const hButton = document.querySelector("#move-horiz");
+      const moversSvg = document.querySelector("#movers-svg");
       const hDistance = 150;
+      const vDistance = 40;
       const hPositions = 3;
+      const nofMovers = 10;
       let hPosIndex = 0;
       let hPos = 0;
+
+      const hMovers = [];
+      for (let i=0; i<nofMovers; i++) {
+        const mover = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+        mover.setAttribute('stroke', 'black');
+        mover.setAttribute('fill', 'green');
+        mover.setAttribute('cx', '50');
+        mover.setAttribute('cy', `${70 + i * vDistance}`);
+        mover.setAttribute('r', '16');
+        mover.setAttribute('stroke-width', '3');
+        mover.classList.add('h-move');
+        hMovers.push(mover);
+      }
+
+      hMovers.forEach(mover => {
+        moversSvg.appendChild(mover);
+      });
 
       const clickHandler = (e) => {
         console.log("move horizontally");
@@ -33,6 +53,9 @@
         hPos = hPosIndex * hDistance;
         console.log(`hPosIx: ${hPosIndex} hPos:${hPos}`);
         c1.style.transform = `translateX(${hPos}px)`;
+        hMovers.forEach(mover => {
+            mover.style.transform = `translateX(${hPos}px)`;
+        });
       }
 
       hButton.addEventListener("click", clickHandler);
