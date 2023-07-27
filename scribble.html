@@ -1,0 +1,47 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Ball Sorter</title>
+    <style>
+        .h-move {
+            transition: transform 1s;
+        }
+    </style>
+  </head>
+  <body>
+    <svg height="500" width="500">
+        <circle id="c1" class="h-move" cx="50" cy="50" r="16" stroke="black" stroke-width="3" fill="red" />
+        Sorry, your browser does not support inline SVG.  
+    </svg>
+    <br>
+    <button id="move-horiz" type="button">&lt;---&gt;</button>
+    <div id="status-msg">starting up...</div>
+    <script type="module">
+      const statusMsg = document.querySelector("#status-msg");
+      const c1 = document.querySelector("#c1");
+      const hButton = document.querySelector("#move-horiz");
+      const hDistance = 150;
+      const hPositions = 3;
+      let hPosIndex = 0;
+      let hPos = 0;
+
+      const clickHandler = (e) => {
+        console.log("move horizontally");
+        hPosIndex = (hPosIndex + 1) % hPositions;
+        hPos = hPosIndex * hDistance;
+        console.log(`hPosIx: ${hPosIndex} hPos:${hPos}`);
+        c1.style.transform = `translateX(${hPos}px)`;
+      }
+
+      hButton.addEventListener("click", clickHandler);
+      hButton.focus();
+
+      console.log("so far so good");
+      statusMsg.innerText = "Done!";
+
+
+    </script>
+  </body>
+</html>
