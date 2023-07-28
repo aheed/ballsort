@@ -26,7 +26,8 @@
       const downButton = document.querySelector("#move-down");
       const moversSvg = document.querySelector("#movers-svg");
       const hDistance = 150;
-      const vDistance = 25;
+      const vDistanceMin = 5;
+      const vDistanceMax = 25;
       const hPositions = 3;
       const vPositions = 5;
       const nofMovers = 20;
@@ -42,7 +43,6 @@
       let hPosIndex = 0;
       let hPos = 0;
       let vPosIndex = 0;
-      let vPos = 0;
 
       const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
       const ipolCurried = (min, max, maxIndex) => (index) => ipol(index, min, max, maxIndex);
@@ -59,13 +59,11 @@
         mover.setAttribute('stroke', 'none');
         mover.setAttribute('fill', 'black');
         mover.setAttribute('cx', '50');
-        mover.setAttribute('cy', `${70 + i * vDistance}`);
+        mover.setAttribute('cy', '50');
         mover.setAttribute('r', '16');
         mover.setAttribute('stroke-width', '3');
         
         const transFun = `cubic-bezier(${ipFun0(i)}, ${ipFun1(i)}, ${ipFun2(i)}, ${ipFun3(i)}`;
-        console.log(transFun);
-        //mover.style['transition-timing-function'] = 'cubic-bezier(0.1, 0.7, 1.0, 0.1)';
         mover.style['transition-timing-function'] = transFun;
         mover.classList.add('h-move');
         hMovers.push(mover);
@@ -76,22 +74,33 @@
       });
 
       const updatePositions = () => {
-        hPosIndex = (hPosIndex + 1) % hPositions;
         hPos = hPosIndex * hDistance;
         console.log(`hPosIx: ${hPosIndex} hPos:${hPos}`);
-        c1.style.transform = `translateX(${hPos}px)`;        
-        hMovers.forEach(mover => {
-            mover.style.transform = `translateX(${hPos}px)`;
+        c1.style.transform = `translateX(${hPos}px)`;
+        const vPosFun = ipolCurried(vDistanceMin, vDistanceMax, vPositions - 1);
+        hMovers.forEach((mover, i) => {
+            let vDistance = vPosFun(vPosIndex);
+            let vPos = Math.floor(i * vDistance);
+            mover.style.transform = `translateX(${hPos}px) translateY(${vPos}px)`;
         });
       }
 
       const horizClickHandler = (e) => {
         console.log("move horizontally");
+        hPosIndex = (hPosIndex + 1) % hPositions;
+        updatePositions();
+      }
+
+      const downClickHandler = (e) => {
+        console.log("move down");
+        vPosIndex = (vPosIndex + 1) % vPositions;
         updatePositions();
       }
 
       hButton.addEventListener("click", horizClickHandler);
+      downButton.addEventListener("click", downClickHandler);
       hButton.focus();
+      updatePositions();
 
       console.log("so far so good");
       statusMsg.innerText = "Done!";
