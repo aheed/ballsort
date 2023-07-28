@@ -46,10 +46,12 @@
 
       const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
       const ipolCurried = (min, max, maxIndex) => (index) => ipol(index, min, max, maxIndex);
-      const ipFun0 = ipolCurried(cb0Min, cb0Max, nofMovers - 1);
-      const ipFun1 = ipolCurried(cb1Min, cb1Max, nofMovers - 1);
-      const ipFun2 = ipolCurried(cb2Min, cb2Max, nofMovers - 1);
-      const ipFun3 = ipolCurried(cb3Min, cb3Max, nofMovers - 1);
+      const ipolCurriedMax = (maxIndex) => (min, max) => ipolCurried(min, max, maxIndex);
+      const ipolCurriedMaxFun = ipolCurriedMax(nofMovers - 1);
+      const ipFun0 = ipolCurriedMaxFun(cb0Min, cb0Max);
+      const ipFun1 = ipolCurriedMaxFun(cb1Min, cb1Max);
+      const ipFun2 = ipolCurriedMaxFun(cb2Min, cb2Max);
+      const ipFun3 = ipolCurriedMaxFun(cb3Min, cb3Max);
 
       const hMovers = [];
       for (let i=0; i<nofMovers; i++) {
