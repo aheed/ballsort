@@ -17,16 +17,19 @@
     </svg>
     <br>
     <button id="move-horiz" type="button">&lt;---&gt;</button>
+    <button id="move-down" type="button">⬇️</button>
     <div id="status-msg">starting up...</div>
     <script type="module">
       const statusMsg = document.querySelector("#status-msg");
       const c1 = document.querySelector("#c1");
       const hButton = document.querySelector("#move-horiz");
+      const downButton = document.querySelector("#move-down");
       const moversSvg = document.querySelector("#movers-svg");
       const hDistance = 150;
-      const vDistance = 40;
+      const vDistance = 25;
       const hPositions = 3;
-      const nofMovers = 10;
+      const vPositions = 5;
+      const nofMovers = 20;
       const cb0Min = 0.55;
       const cb0Max = 0.95;
       const cb1Min = 0.1;
@@ -38,6 +41,8 @@
 
       let hPosIndex = 0;
       let hPos = 0;
+      let vPosIndex = 0;
+      let vPos = 0;
 
       const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
       const ipolCurried = (min, max, maxIndex) => (index) => ipol(index, min, max, maxIndex);
@@ -49,8 +54,8 @@
       const hMovers = [];
       for (let i=0; i<nofMovers; i++) {
         const mover = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-        mover.setAttribute('stroke', 'black');
-        mover.setAttribute('fill', 'green');
+        mover.setAttribute('stroke', 'none');
+        mover.setAttribute('fill', 'black');
         mover.setAttribute('cx', '50');
         mover.setAttribute('cy', `${70 + i * vDistance}`);
         mover.setAttribute('r', '16');
@@ -68,8 +73,7 @@
         moversSvg.appendChild(mover);
       });
 
-      const clickHandler = (e) => {
-        console.log("move horizontally");
+      const updatePositions = () => {
         hPosIndex = (hPosIndex + 1) % hPositions;
         hPos = hPosIndex * hDistance;
         console.log(`hPosIx: ${hPosIndex} hPos:${hPos}`);
@@ -79,7 +83,12 @@
         });
       }
 
-      hButton.addEventListener("click", clickHandler);
+      const horizClickHandler = (e) => {
+        console.log("move horizontally");
+        updatePositions();
+      }
+
+      hButton.addEventListener("click", horizClickHandler);
       hButton.focus();
 
       console.log("so far so good");
