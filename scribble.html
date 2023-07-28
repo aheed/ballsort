@@ -8,6 +8,10 @@
         .h-move {
             transition: transform 1s;
         }
+        .v-move {
+            transition: transform 1.5s;
+            transition-timing-function: ease-in-out;
+        }
     </style>
   </head>
   <body>
@@ -54,23 +58,27 @@
       const ipFun3 = ipolCurriedMaxFun(cb3Min, cb3Max);
 
       const hMovers = [];
+      const vMovers = [];
       for (let i=0; i<nofMovers; i++) {
+        const vMover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+        vMover.classList.add('v-move');
+        vMovers.push(vMover);
         const mover = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
         mover.setAttribute('stroke', 'none');
         mover.setAttribute('fill', 'black');
         mover.setAttribute('cx', '50');
-        mover.setAttribute('cy', '50');
+        mover.setAttribute('cy', '70');
         mover.setAttribute('r', '16');
-        mover.setAttribute('stroke-width', '3');
-        
+        mover.setAttribute('stroke-width', '3');        
         const transFun = `cubic-bezier(${ipFun0(i)}, ${ipFun1(i)}, ${ipFun2(i)}, ${ipFun3(i)}`;
         mover.style['transition-timing-function'] = transFun;
         mover.classList.add('h-move');
         hMovers.push(mover);
+        vMover.appendChild(mover);
       }
 
-      hMovers.forEach(mover => {
-        moversSvg.appendChild(mover);
+      vMovers.forEach(vMover => {
+        moversSvg.appendChild(vMover);
       });
 
       const updatePositions = () => {
@@ -79,9 +87,12 @@
         c1.style.transform = `translateX(${hPos}px)`;
         const vPosFun = ipolCurried(vDistanceMin, vDistanceMax, vPositions - 1);
         hMovers.forEach((mover, i) => {
+            mover.style.transform = `translateX(${hPos}px)`;
+        });
+        vMovers.forEach((mover, i) => {
             let vDistance = vPosFun(vPosIndex);
             let vPos = Math.floor(i * vDistance);
-            mover.style.transform = `translateX(${hPos}px) translateY(${vPos}px)`;
+            mover.style.transform = `translateY(${vPos}px)`;
         });
       }
 
