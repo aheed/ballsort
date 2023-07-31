@@ -55,6 +55,7 @@
       const originY = 70;
       const clawOpenAngleDegrees = 58;
       const clawClosedAngleDegrees = 25;
+      const ballHolderOffset = 24;
       let clawOpen = true;
 
       let hPosIndex = 0;
@@ -82,6 +83,7 @@
 
       const hMovers = [];
       const vMovers = [];
+      let ballHolderInClawElem;
       for (let i=0; i<nofMovers; i++) {
         const vMover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
         vMover.classList.add('v-move');
@@ -98,6 +100,10 @@
         }
         else {
           mover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+          const ballHolder = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+          ballHolder.style.transform = `translateY(${ballHolderOffset}px)`;
+          mover.appendChild(ballHolder);
+          ballHolderInClawElem = ballHolder;
           vMover.classList.add('claw-wrapper');
           clawRight = document.createElementNS("http://www.w3.org/2000/svg", 'path');
           clawRight.setAttribute('id', "claw-right");
@@ -150,19 +156,27 @@
         return ret;
       }
 
-      const createBall = (hIndex, vIndex, color) => {
+      const createBallWrapper = (color) => {
         const grayBall = createBallCircle('lightgray');
         const coloredBall = createBallCircle(color);
         const wrapper = document.createElementNS("http://www.w3.org/2000/svg", 'g');
         wrapper.classList.add('ball-wrapper');
         wrapper.appendChild(grayBall);
         wrapper.appendChild(coloredBall);
+        return wrapper;
+      }
+
+      const createBall = (hIndex, vIndex, color) => {
+        const wrapper = createBallWrapper(color);
         moversSvg.appendChild(wrapper);
         const ret = {hIndex: hIndex, vIndex: vIndex, wrapper: wrapper};
         return ret;
       }
 
       let balls = [];
+      let ballInClaw;
+
+      ///////////////
       balls.push(createBall(0, 1, 'blue'));
       balls.push(createBall(0, 2, 'red'));
       balls.push(createBall(0, 3, 'pink'));
@@ -170,6 +184,10 @@
       balls.push(createBall(1, 4, 'green'));
       balls.push(createBall(2, 4, 'green'));
       balls.push(createBall(3, 4, 'green'));
+
+      ballInClaw = createBallWrapper('orange');
+      ballHolderInClawElem.appendChild(ballInClaw);
+      ///////////////
 
 
       const updatePositions = () => {
