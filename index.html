@@ -12,12 +12,10 @@
             transition: transform 1.5s;
             transition-timing-function: ease-in-out;
         }
-        #claw-right {
-          transform: rotate(-28deg);
+        .claw {
+          transition: transform 0.3s;
+          transition-timing-function: ease-in;
         }
-        #claw-left {
-          transform: rotate(28deg);
-        }        
     </style>
   </head>
   <body>
@@ -28,12 +26,14 @@
     <br>
     <button id="move-horiz" type="button">&lt;---&gt;</button>
     <button id="move-down" type="button">⬇️</button>
+    <button id="claw-toggle" type="button">Grab!</button>
     <div id="status-msg">starting up...</div>
     <script type="module">
       const statusMsg = document.querySelector("#status-msg");
       const c1 = document.querySelector("#c1");
       const hButton = document.querySelector("#move-horiz");
       const downButton = document.querySelector("#move-down");
+      const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
       const hDistance = 150;
       const vDistanceMin = 5;
@@ -51,6 +51,9 @@
       const cb3Max = 1.4;
       const originX = 50;
       const originY = 70;
+      const clawOpenAngleDegrees = 58;
+      const clawClosedAngleDegrees = 25;
+      let clawOpen = true;
 
       let hPosIndex = 0;
       let hPos = 0;
@@ -64,12 +67,15 @@
       const ipFun1 = ipolCurriedMaxFun(cb1Min, cb1Max);
       const ipFun2 = ipolCurriedMaxFun(cb2Min, cb2Max);
       const ipFun3 = ipolCurriedMaxFun(cb3Min, cb3Max);
+      let clawLeft;
+      let clawRight;
 
       const setClawAttributes = (elem) => {
         elem.setAttribute('fill', "none");
         elem.setAttribute('stroke', "orange");
         elem.setAttribute('stroke-width', "8");
         elem.setAttribute('transform-origin', `${originX}px ${originY}px`);
+        elem.classList.add('claw');
       }
 
       const hMovers = [];
@@ -90,13 +96,13 @@
         }
         else {
           mover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-          const clawRight = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+          clawRight = document.createElementNS("http://www.w3.org/2000/svg", 'path');
           clawRight.setAttribute('id', "claw-right");
           clawRight.setAttribute('d', `M${originX},${originY} a20,20 0 0,1 0,40`);
           setClawAttributes(clawRight);
           mover.appendChild(clawRight);
 
-          const clawLeft = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+          clawLeft = document.createElementNS("http://www.w3.org/2000/svg", 'path');
           clawLeft.setAttribute('id', "claw-left");
           clawLeft.setAttribute('d', `M${originX},${originY} a20,20 0 0,0 0,40`);
           setClawAttributes(clawLeft);
@@ -126,6 +132,9 @@
             let vPos = Math.floor(i * vDistance);
             mover.style.transform = `translateY(${vPos}px)`;
         });
+        const clawAngleDegrees = clawOpen ? clawOpenAngleDegrees : clawClosedAngleDegrees;
+        clawRight.style.transform = `rotate(${-clawAngleDegrees}deg)`;
+        clawLeft.style.transform = `rotate(${clawAngleDegrees}deg)`;
       }
 
       const horizClickHandler = (e) => {
@@ -140,8 +149,15 @@
         updatePositions();
       }
 
+      const clawClickHandler = (e) => {
+        console.log("toggle claw");
+        clawOpen = !clawOpen;
+        updatePositions();
+      }
+
       hButton.addEventListener("click", horizClickHandler);
       downButton.addEventListener("click", downClickHandler);
+      clawButton.addEventListener("click", clawClickHandler);
       hButton.focus();
       updatePositions();
 
