@@ -17,25 +17,13 @@
         }
         #claw-left {
           transform: rotate(28deg);
-        }
-        #claw {
-          transform: translateX(100px);
-        }
+        }        
     </style>
   </head>
   <body>
     <svg id="movers-svg" height="500" width="500">
         <circle id="c1" class="h-move" cx="50" cy="50" r="16" stroke="black" stroke-width="3" fill="red" />
         Sorry, your browser does not support inline SVG.
-        <circle id="c1" class="h-move" cx="125" cy="80" r="16" stroke="black" stroke-width="3" fill="none"/>
-        <path id="claw-left0" d="M105,80 a20,20 0 0,1 20,-20" fill="none" stroke="green" stroke-width="5" />
-        <path id="claw-right0" d="M145,80 a20,20 0 0,0 -20,-20" fill="none" stroke="black" stroke-width="5" />        
-
-        <g id="claw">
-        <path id="claw-left" d="M125,130 a20,20 0 0,0 0,40" fill="none" stroke="green" stroke-width="5" />
-        <path id="claw-right" d="M125,130 a20,20 0 0,1 0,40" fill="none" stroke="black" stroke-width="5" />
-        <path id="claw-right-unrotated" d="M125,130 a20,20 0 0,1 0,40" fill="none" stroke="gray" stroke-width="5" />
-        </g>
     </svg>
     <br>
     <button id="move-horiz" type="button">&lt;---&gt;</button>
