@@ -38,10 +38,11 @@
       const downButton = document.querySelector("#move-down");
       const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
-      const hDistance = 150;
-      const vDistanceMin = 5;
-      const vDistanceMax = 25;
-      const hPositions = 3;
+      const hDistance = 100;
+      const vTopSpace = 180;
+      const vDistance = 50;
+      const vOffsetClaw = -25;
+      const hPositions = 4;
       const vPositions = 5;
       const nofMovers = 20;
       const cb0Min = 0.55;
@@ -75,7 +76,7 @@
 
       const setClawAttributes = (elem) => {
         elem.setAttribute('fill', "none");
-        elem.setAttribute('stroke', "orange");
+        elem.setAttribute('stroke', "black");
         elem.setAttribute('stroke-width', "8");
         elem.setAttribute('transform-origin', `${originX}px ${originY}px`);
         elem.classList.add('claw');
@@ -122,22 +123,61 @@
         moversSvg.appendChild(vMover);
       });
 
+      const createBallCircle = (color) => {
+        const ret = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+        ret.setAttribute('stroke', 'black');
+        ret.setAttribute('fill', color);
+        ret.setAttribute('cx', `${originX}`);
+        ret.setAttribute('cy', `${originY}`);
+        ret.setAttribute('r', '20');
+        ret.setAttribute('stroke-width', '2');
+        ret.classList.add('ball');
+        return ret;
+      }
+
+      const createBall = (hIndex, vIndex, color) => {
+        const grayBall = createBallCircle('lightgray');
+        const coloredBall = createBallCircle(color);
+        const wrapper = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+        wrapper.classList.add('ball-wrapper');
+        wrapper.appendChild(grayBall);
+        wrapper.appendChild(coloredBall);
+        moversSvg.appendChild(wrapper);
+        const ret = {hIndex: hIndex, vIndex: vIndex, wrapper: wrapper};
+        return ret;
+      }
+
+      let balls = [];
+      balls.push(createBall(0, 1, 'blue'));
+      balls.push(createBall(0, 2, 'red'));
+      balls.push(createBall(0, 3, 'pink'));
+      balls.push(createBall(0, 4, 'green'));
+      balls.push(createBall(1, 4, 'green'));
+      balls.push(createBall(2, 4, 'green'));
+      balls.push(createBall(3, 4, 'green'));
+
+
       const updatePositions = () => {
         hPos = hPosIndex * hDistance;
-        console.log(`hPosIx: ${hPosIndex} hPos:${hPos}`);
+        console.log(`hPosIx: ${hPosIndex} vPosIx: ${vPosIndex} hPos:${hPos}`);
         c1.style.transform = `translateX(${hPos}px)`;
-        const vPosFun = ipolCurried(vDistanceMin, vDistanceMax, vPositions - 1);
+        const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + vPosIndex * vDistance, vMovers.length - 1);
         hMovers.forEach((mover, i) => {
             mover.style.transform = `translateX(${hPos}px)`;
         });
         vMovers.forEach((mover, i) => {
-            let vDistance = vPosFun(vPosIndex);
-            let vPos = Math.floor(i * vDistance);
+            let vPos = vPosFun(i);
             mover.style.transform = `translateY(${vPos}px)`;
         });
         const clawAngleDegrees = clawOpen ? clawOpenAngleDegrees : clawClosedAngleDegrees;
         clawRight.style.transform = `rotate(${-clawAngleDegrees}deg)`;
         clawLeft.style.transform = `rotate(${clawAngleDegrees}deg)`;
+
+        balls.forEach((ball) => {
+          const hPosBall = ball.hIndex * hDistance;
+          const vPosBall = vTopSpace + ball.vIndex * vDistance;
+          ball.wrapper.style.transform = `translate(${hPosBall}px, ${vPosBall}px)`;
+        });
       }
 
       const horizClickHandler = (e) => {
