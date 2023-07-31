@@ -56,7 +56,7 @@
       const clawOpenAngleDegrees = 58;
       const clawClosedAngleDegrees = 25;
       const ballHolderOffset = 24;
-      let clawOpen = true;
+      let clawOpen = false;
 
       let hPosIndex = 0;
       let hPos = 0;
@@ -169,8 +169,12 @@
       const createBall = (hIndex, vIndex, color) => {
         const wrapper = createBallWrapper(color);
         moversSvg.appendChild(wrapper);
-        const ret = {hIndex: hIndex, vIndex: vIndex, wrapper: wrapper};
-        return ret;
+        return {hIndex: hIndex, vIndex: vIndex, wrapper: wrapper, color: color};
+      }
+
+      const createBallInClaw = (color) => {
+        const wrapper = createBallWrapper(color);
+        return {wrapper: wrapper, color: color};
       }
 
       let balls = [];
@@ -185,8 +189,8 @@
       balls.push(createBall(2, 4, 'green'));
       balls.push(createBall(3, 4, 'green'));
 
-      ballInClaw = createBallWrapper('orange');
-      ballHolderInClawElem.appendChild(ballInClaw);
+      ballInClaw = createBallInClaw('orange');
+      ballHolderInClawElem.appendChild(ballInClaw.wrapper);
       ///////////////
 
 
@@ -232,8 +236,25 @@
       }
 
       const clawClickHandler = (e) => {
-        console.log("toggle claw");
         clawOpen = !clawOpen;
+        if(clawOpen) {
+          if (!!ballInClaw) {
+            console.log("Dropping ball");
+            balls.push(createBall(hPosIndex, vPosIndex, ballInClaw.color));
+            ballHolderInClawElem.removeChild(ballInClaw.wrapper);
+            ballInClaw = null;
+          }
+        }
+        else {
+          const ballToGrab = balls.find((ball) => ball.hIndex == hPosIndex && ball.vIndex == vPosIndex);
+          if (!!ballToGrab) {
+            console.log("Grabbing ball");
+            ballInClaw = createBallInClaw(ballToGrab.color);
+            ballHolderInClawElem.appendChild(ballInClaw.wrapper);
+            moversSvg.removeChild(ballToGrab.wrapper);
+            balls = balls.filter((ball) => ball != ballToGrab);
+          }
+        }
         updatePositions();
       }
 
