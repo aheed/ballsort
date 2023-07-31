@@ -12,12 +12,30 @@
             transition: transform 1.5s;
             transition-timing-function: ease-in-out;
         }
+        #claw-right {
+          transform: rotate(-28deg);
+        }
+        #claw-left {
+          transform: rotate(28deg);
+        }
+        #claw {
+          transform: translateX(100px);
+        }
     </style>
   </head>
   <body>
     <svg id="movers-svg" height="500" width="500">
         <circle id="c1" class="h-move" cx="50" cy="50" r="16" stroke="black" stroke-width="3" fill="red" />
-        Sorry, your browser does not support inline SVG.  
+        Sorry, your browser does not support inline SVG.
+        <circle id="c1" class="h-move" cx="125" cy="80" r="16" stroke="black" stroke-width="3" fill="none"/>
+        <path id="claw-left0" d="M105,80 a20,20 0 0,1 20,-20" fill="none" stroke="green" stroke-width="5" />
+        <path id="claw-right0" d="M145,80 a20,20 0 0,0 -20,-20" fill="none" stroke="black" stroke-width="5" />        
+
+        <g id="claw">
+        <path id="claw-left" d="M125,130 a20,20 0 0,0 0,40" fill="none" stroke="green" stroke-width="5" />
+        <path id="claw-right" d="M125,130 a20,20 0 0,1 0,40" fill="none" stroke="black" stroke-width="5" />
+        <path id="claw-right-unrotated" d="M125,130 a20,20 0 0,1 0,40" fill="none" stroke="gray" stroke-width="5" />
+        </g>
     </svg>
     <br>
     <button id="move-horiz" type="button">&lt;---&gt;</button>
@@ -43,6 +61,8 @@
       const cb2Max = 0.6;
       const cb3Min = 1.0;
       const cb3Max = 1.4;
+      const originX = 50;
+      const originY = 70;
 
       let hPosIndex = 0;
       let hPos = 0;
@@ -57,19 +77,43 @@
       const ipFun2 = ipolCurriedMaxFun(cb2Min, cb2Max);
       const ipFun3 = ipolCurriedMaxFun(cb3Min, cb3Max);
 
+      const setClawAttributes = (elem) => {
+        elem.setAttribute('fill', "none");
+        elem.setAttribute('stroke', "orange");
+        elem.setAttribute('stroke-width', "8");
+        elem.setAttribute('transform-origin', `${originX}px ${originY}px`);
+      }
+
       const hMovers = [];
       const vMovers = [];
       for (let i=0; i<nofMovers; i++) {
         const vMover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
         vMover.classList.add('v-move');
         vMovers.push(vMover);
-        const mover = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-        mover.setAttribute('stroke', 'none');
-        mover.setAttribute('fill', 'black');
-        mover.setAttribute('cx', '50');
-        mover.setAttribute('cy', '70');
-        mover.setAttribute('r', '16');
-        mover.setAttribute('stroke-width', '3');        
+        let mover;
+        if (i < (nofMovers - 1)) {
+          mover = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+          mover.setAttribute('stroke', 'none');
+          mover.setAttribute('fill', 'black');
+          mover.setAttribute('cx', `${originX}`);
+          mover.setAttribute('cy', `${originY}`);
+          mover.setAttribute('r', '16');
+          mover.setAttribute('stroke-width', '3');
+        }
+        else {
+          mover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+          const clawRight = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+          clawRight.setAttribute('id', "claw-right");
+          clawRight.setAttribute('d', `M${originX},${originY} a20,20 0 0,1 0,40`);
+          setClawAttributes(clawRight);
+          mover.appendChild(clawRight);
+
+          const clawLeft = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+          clawLeft.setAttribute('id', "claw-left");
+          clawLeft.setAttribute('d', `M${originX},${originY} a20,20 0 0,0 0,40`);
+          setClawAttributes(clawLeft);
+          mover.appendChild(clawLeft);
+        }
         const transFun = `cubic-bezier(${ipFun0(i)}, ${ipFun1(i)}, ${ipFun2(i)}, ${ipFun3(i)}`;
         mover.style['transition-timing-function'] = transFun;
         mover.classList.add('h-move');
