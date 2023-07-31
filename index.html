@@ -16,6 +16,9 @@
           transition: transform 0.3s;
           transition-timing-function: ease-in;
         }
+        button {
+          font-size: 40px;
+        }
     </style>
   </head>
   <body>
@@ -24,9 +27,9 @@
         Sorry, your browser does not support inline SVG.
     </svg>
     <br>
-    <button id="move-horiz" type="button">&lt;---&gt;</button>
-    <button id="move-down" type="button">⬇️</button>
-    <button id="claw-toggle" type="button">Grab!</button>
+    <button id="move-horiz" type="button">↔️</button>
+    <button id="move-down" type="button">↕️</button>
+    <button id="claw-toggle" type="button">🤏</button>
     <div id="status-msg">starting up...</div>
     <script type="module">
       const statusMsg = document.querySelector("#status-msg");
@@ -162,7 +165,7 @@
       updatePositions();
 
       console.log("so far so good");
-      statusMsg.innerText = "Done!";
+      statusMsg.innerText = "";
 
 
     </script>
