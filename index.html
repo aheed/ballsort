@@ -100,6 +100,7 @@
         }
         else {
           mover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+          vMover.classList.add('claw-wrapper');
           clawRight = document.createElementNS("http://www.w3.org/2000/svg", 'path');
           clawRight.setAttribute('id', "claw-right");
           clawRight.setAttribute('d', `M${originX},${originY} a20,20 0 0,1 0,40`);
@@ -111,6 +112,22 @@
           clawLeft.setAttribute('d', `M${originX},${originY} a20,20 0 0,0 0,40`);
           setClawAttributes(clawLeft);
           mover.appendChild(clawLeft);
+
+          const clawHinge = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+          clawHinge.setAttribute('fill', 'black');
+          clawHinge.setAttribute('cx', `${originX}`);
+          clawHinge.setAttribute('cy', `${originY - 2}`);
+          clawHinge.setAttribute('r', '6');
+          clawHinge.setAttribute('stroke', 'none');
+          mover.appendChild(clawHinge);
+
+          const clawBolt = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+          clawBolt.setAttribute('fill', 'white');
+          clawBolt.setAttribute('cx', `${originX}`);
+          clawBolt.setAttribute('cy', `${originY - 2}`);
+          clawBolt.setAttribute('r', '2');
+          clawBolt.setAttribute('stroke', 'none');
+          mover.appendChild(clawBolt);
         }
         const transFun = `cubic-bezier(${ipFun0(i)}, ${ipFun1(i)}, ${ipFun2(i)}, ${ipFun3(i)}`;
         mover.style['transition-timing-function'] = transFun;
@@ -129,7 +146,7 @@
         ret.setAttribute('fill', color);
         ret.setAttribute('cx', `${originX}`);
         ret.setAttribute('cy', `${originY}`);
-        ret.setAttribute('r', '20');
+        ret.setAttribute('r', '18');
         ret.setAttribute('stroke-width', '2');
         ret.classList.add('ball');
         return ret;
@@ -161,13 +178,20 @@
         hPos = hPosIndex * hDistance;
         console.log(`hPosIx: ${hPosIndex} vPosIx: ${vPosIndex} hPos:${hPos}`);
         c1.style.transform = `translateX(${hPos}px)`;
-        const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + vPosIndex * vDistance, vMovers.length - 1);
+        const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + vPosIndex * vDistance, vMovers.length - 2);
         hMovers.forEach((mover, i) => {
             mover.style.transform = `translateX(${hPos}px)`;
         });
         vMovers.forEach((mover, i) => {
-            let vPos = vPosFun(i);
-            mover.style.transform = `translateY(${vPos}px)`;
+          let index = i;
+          let offset = -15;
+          if (mover.classList.contains('claw-wrapper')) {
+            index = index - 1;
+            offset = 1;
+          }
+
+          let vPos = vPosFun(index) + offset;
+          mover.style.transform = `translateY(${vPos}px)`;
         });
         const clawAngleDegrees = clawOpen ? clawOpenAngleDegrees : clawClosedAngleDegrees;
         clawRight.style.transform = `rotate(${-clawAngleDegrees}deg)`;
