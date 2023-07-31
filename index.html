@@ -23,7 +23,6 @@
   </head>
   <body>
     <svg id="movers-svg" height="500" width="500">
-        <circle id="c1" class="h-move" cx="50" cy="50" r="16" stroke="black" stroke-width="3" fill="red" />
         Sorry, your browser does not support inline SVG.
     </svg>
     <br>
@@ -33,7 +32,6 @@
     <div id="status-msg">starting up...</div>
     <script type="module">
       const statusMsg = document.querySelector("#status-msg");
-      const c1 = document.querySelector("#c1");
       const hButton = document.querySelector("#move-horiz");
       const downButton = document.querySelector("#move-down");
       const clawButton = document.querySelector("#claw-toggle");
@@ -177,7 +175,6 @@
       const updatePositions = () => {
         hPos = hPosIndex * hDistance;
         console.log(`hPosIx: ${hPosIndex} vPosIx: ${vPosIndex} hPos:${hPos}`);
-        c1.style.transform = `translateX(${hPos}px)`;
         const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + vPosIndex * vDistance, vMovers.length - 2);
         hMovers.forEach((mover, i) => {
             mover.style.transform = `translateX(${hPos}px)`;
