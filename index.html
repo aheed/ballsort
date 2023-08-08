@@ -271,8 +271,17 @@
       console.log("so far so good");
       statusMsg.innerText = "";
 
+      const receiveMessage = (msg) => {
+        console.log("receiveMessage ", msg);
+        const newState = JSON.parse(msg);
+        hPosIndex = newState.PosX;
+        vPosIndex = newState.PosY;
+        updatePositions();
+      }
+
       callMe();
       callMeBack(myCallback);
+      registerMessageCallback(receiveMessage);
       connect();
 
     </script>

@@ -8,6 +8,12 @@ const callMeBack = (callback) => {
     callback("me called back, yes?");
 }
 
+var callback = null;
+
+const registerMessageCallback = (cb) => {
+    callback = cb;
+}
+
 var socket = null;
 
 function connect() {
@@ -29,6 +35,9 @@ function connect() {
 
     socket.addEventListener('message', function(event) {
         console.log('Message from server: ' + event.data);
+        if (!!callback) {
+            callback(event.data);
+        }
     });
 
     socket.addEventListener('close', function(event) {
