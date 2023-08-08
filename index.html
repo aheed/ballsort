@@ -22,6 +22,7 @@
     </style>
   </head>
   <body>
+    <script src="client.js"></script>
     <svg id="movers-svg" height="500" width="500">
         Sorry, your browser does not support inline SVG.
     </svg>
@@ -31,6 +32,9 @@
     <button id="claw-toggle" type="button">🤏</button>
     <div id="status-msg">starting up...</div>
     <script type="module">
+      const myCallback = (msg) => {
+        console.log(msg, "yes!");
+      }      
       const statusMsg = document.querySelector("#status-msg");
       const hButton = document.querySelector("#move-horiz");
       const downButton = document.querySelector("#move-down");
@@ -267,6 +271,9 @@
       console.log("so far so good");
       statusMsg.innerText = "";
 
+      callMe();
+      callMeBack(myCallback);
+      connect();
 
     </script>
   </body>
