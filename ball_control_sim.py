@@ -1,5 +1,7 @@
 import asyncio
 
+import requests
+
 from ball_control import BallControl, IllegalBallControlStateError
 
 class BallControlSim(BallControl):
@@ -28,10 +30,19 @@ class BallControlSim(BallControl):
         await asyncio.sleep(duration * cls.delay_mult)
 
     async def move_relative(cls, x: int, y: int = 0):
-        if (cls.x == x and cls.y == y):
-            return
-        await cls.__delay(1.0)
-        cls.__set_position(cls.x + x, cls.y + y)
+        
+#        if (cls.x == x and cls.y == y):
+#            return
+
+        delayTask = asyncio.create_task(cls.__delay(1.0))        
+        await delayTask
+        newX = cls.x + x
+        newY = cls.y + y
+        cls.__set_position(newX, newY)
+        url = 'http://localhost:5167/api/update'
+        stateobj = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY, "apa":78}}
+        resp = requests.post(url, json = stateobj)
+        print(resp.text)
 
     async def move_horizontally(cls, distance: int):
         if (0 == distance):
