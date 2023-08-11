@@ -20,8 +20,12 @@ class BallControlSim(BallControl):
     client_session = None
     client_lock = None
 
-    #def __init__(self: BallControl, delay_multiplier: float) ->  None:
-    #    self.delay_multiplier = delay_multiplier
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self, *excinfo):
+        await self.client_session.close()
+        await asyncio.sleep(0.5)
 
     def __set_position(self, x: int, y: int = 0):
         if (x < self.MIN_X or y < self.MIN_Y or x > self.MAX_X or y > self.MAX_Y):

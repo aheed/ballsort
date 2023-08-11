@@ -29,19 +29,21 @@ async def sequence_async(bc: BallControl):
 def example_async(bc: BallControl):
     asyncio.run(sequence_async())
 
-async def sequence_concurrent(bc: BallControl):
-    t1 = asyncio.create_task(bc.move_vertically(2))
-    t2 = asyncio.create_task(bc.move_horizontally(3))
-    await t1
-    await t2
+async def sequence_concurrent():
+    async with get_control_sim() as bc:
+       
+        t1 = asyncio.create_task(bc.move_vertically(2))
+        t2 = asyncio.create_task(bc.move_horizontally(3))
+        await t1
+        await t2
 
-    t3 = asyncio.create_task(bc.move_vertically(-2))
-    t4 = asyncio.create_task(bc.move_horizontally(-1))
-    await t3
-    await t4
+        t3 = asyncio.create_task(bc.move_vertically(-2))
+        t4 = asyncio.create_task(bc.move_horizontally(-1))
+        await t3
+        await t4
 
-def example_concurrent(bc: BallControl):
-    asyncio.run(sequence_concurrent(bc))
+def example_concurrent():
+    asyncio.run(sequence_concurrent())
     
 
 def main():
@@ -49,8 +51,8 @@ def main():
     #sequence1()
     #sequence2()
     #example_async()
-    bcontrol = get_control_sim()
-    example_concurrent(bcontrol)
+    #bcontrol = get_control_sim()
+    example_concurrent()
 
 if __name__ == "__main__":
     import time
