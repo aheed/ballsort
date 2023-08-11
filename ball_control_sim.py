@@ -23,71 +23,71 @@ class BallControlSim(BallControl):
     #def __init__(self: BallControl, delay_multiplier: float) ->  None:
     #    self.delay_multiplier = delay_multiplier
 
-    def __set_position(cls, x: int, y: int = 0):
-        if (x < cls.MIN_X or y < cls.MIN_Y or x > cls.MAX_X or y > cls.MAX_Y):
+    def __set_position(self, x: int, y: int = 0):
+        if (x < self.MIN_X or y < self.MIN_Y or x > self.MAX_X or y > self.MAX_Y):
             raise Exception("coordinates out of bounds")
-        cls.x = x;
-        cls.y = y;
-        print(f"new position: {cls.x}, {cls.y}")
+        self.x = x;
+        self.y = y;
+        print(f"new position: {self.x}, {self.y}")
     
-    async def __delay(cls, duration: float):
-        await asyncio.sleep(duration * cls.delay_mult)
+    async def __delay(self, duration: float):
+        await asyncio.sleep(duration * self.delay_mult)
 
-    def get_session(cls):
-        if (cls.client_session is None):
-            cls.client_lock = asyncio.Lock()
-            cls.client_session = aiohttp.ClientSession(cls.backend)
-        return cls.client_session
+    def get_session(self):
+        if (self.client_session is None):
+            self.client_lock = asyncio.Lock()
+            self.client_session = aiohttp.ClientSession(self.backend)
+        return self.client_session
     
-    async def send_update(cls, json: any):
-        session = cls.get_session()
-        async with cls.client_lock:
+    async def send_update(self, json: any):
+        session = self.get_session()
+        async with self.client_lock:
             resp = await session.post('/api/update', json=json)
             print(resp.status)
             print(await resp.text())
 
-    async def move_relative(cls, x: int, y: int = 0):
+    async def move_relative(self, x: int, y: int = 0):
         
-        newX = cls.x + x
-        newY = cls.y + y
-        cls.__set_position(newX, newY)
-        delayTask = asyncio.create_task(cls.__delay(1.0))
+        newX = self.x + x
+        newY = self.y + y
+        self.__set_position(newX, newY)
+        delayTask = asyncio.create_task(self.__delay(1.0))
         
         stateobj = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY, "apa":78}}
-        await cls.send_update(stateobj)
+        await self.send_update(stateobj)
 
         await delayTask
 
-    async def move_horizontally(cls, distance: int):
+    async def move_horizontally(self, distance: int):
         if (0 == distance):
             return
-        if (cls.moving_horizontally):
+        if (self.moving_horizontally):
             raise IllegalBallControlStateError("Already moving horizontally")
-        cls.moving_horizontally = True
+        self.moving_horizontally = True
         try:
-            await cls.move_relative(distance)
+            await self.move_relative(distance)
         finally:
-            cls.moving_horizontally = False
+            self.moving_horizontally = False
 
-    async def move_vertically(cls, distance: int):
+    async def move_vertically(self, distance: int):
         if (0 == distance):
             return
-        if (cls.moving_vertically):
+        if (self.moving_vertically):
             raise IllegalBallControlStateError("Already moving vertically")
-        cls.moving_vertically = True
+        self.moving_vertically = True
         try:
-            await cls.move_relative(0, distance)
+            await self.move_relative(0, distance)
         finally:
-            cls.moving_vertically = False
+            self.moving_vertically = False
             
-    def move_horizontally_sync(cls, distance: int):
-        asyncio.run(cls.move_horizontally(distance))
+    def move_horizontally_sync(self, distance: int):
+        asyncio.run(self.move_horizontally(distance))
     
-    def move_vertically_sync(cls, distance: int):
-        asyncio.run(cls.move_vertically(distance))
+    def move_vertically_sync(self, distance: int):
+        asyncio.run(self.move_vertically(distance))
 
-    def move_relative_sync(cls, x: int, y: int = 0):
-        asyncio.run(cls.move_relative(x, y))
+    def move_relative_sync(self, x: int, y: int = 0):
+        asyncio.run(self.move_relative(x, y))
 
-    def get_position(cls) -> tuple[int, int]:
-        return cls.x, cls.y
+    def get_position(self) -> tuple[int, int]:
+        return self.x, self.y
