@@ -18,6 +18,7 @@ class BallControlSim(BallControl):
     moving_vertically = False
     backend = 'http://localhost:5167/'
     client_session = None
+    client_lock = None
 
     #def __init__(self: BallControl, delay_multiplier: float) ->  None:
     #    self.delay_multiplier = delay_multiplier
@@ -34,8 +35,16 @@ class BallControlSim(BallControl):
 
     def get_session(cls):
         if (cls.client_session is None):
+            cls.client_lock = asyncio.Lock()
             cls.client_session = aiohttp.ClientSession(cls.backend)
         return cls.client_session
+    
+    async def send_update(cls, json: any):
+        session = cls.get_session()
+        async with cls.client_lock:
+            resp = await session.post('/api/update', json=json)
+            print(resp.status)
+            print(await resp.text())
 
     async def move_relative(cls, x: int, y: int = 0):
         
@@ -45,9 +54,7 @@ class BallControlSim(BallControl):
         delayTask = asyncio.create_task(cls.__delay(1.0))
         
         stateobj = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY, "apa":78}}
-        resp = await cls.get_session().post('/api/update', json=stateobj)        
-        print(resp.status)
-        print(await resp.text())
+        await cls.send_update(stateobj)
 
         await delayTask
 
