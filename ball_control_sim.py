@@ -1,4 +1,5 @@
 import asyncio
+import aiohttp
 
 import requests
 
@@ -15,6 +16,8 @@ class BallControlSim(BallControl):
     y = 0
     moving_horizontally = False
     moving_vertically = False
+    backend = 'http://localhost:5167/'
+    client_session = None
 
     #def __init__(self: BallControl, delay_multiplier: float) ->  None:
     #    self.delay_multiplier = delay_multiplier
@@ -29,20 +32,24 @@ class BallControlSim(BallControl):
     async def __delay(cls, duration: float):
         await asyncio.sleep(duration * cls.delay_mult)
 
+    def get_session(cls):
+        if (cls.client_session is None):
+            cls.client_session = aiohttp.ClientSession(cls.backend)
+        return cls.client_session
+
     async def move_relative(cls, x: int, y: int = 0):
         
-#        if (cls.x == x and cls.y == y):
-#            return
-
-        delayTask = asyncio.create_task(cls.__delay(1.0))        
-        await delayTask
         newX = cls.x + x
         newY = cls.y + y
         cls.__set_position(newX, newY)
-        url = 'http://localhost:5167/api/update'
+        delayTask = asyncio.create_task(cls.__delay(1.0))
+        
         stateobj = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY, "apa":78}}
-        resp = requests.post(url, json = stateobj)
-        print(resp.text)
+        resp = await cls.get_session().post('/api/update', json=stateobj)        
+        print(resp.status)
+        print(await resp.text())
+
+        await delayTask
 
     async def move_horizontally(cls, distance: int):
         if (0 == distance):
