@@ -16,10 +16,10 @@ class V1UpdateReporter(UpdateReporter):
             self.client_session = aiohttp.ClientSession(self.backend)
         return self.client_session
     
-    async def send_update(self, state: StateUpdateModel):
+    async def send_update(self, stateUpdate: StateUpdateModel):
         session = self.get_session()
         async with self.client_lock:
-            resp = await session.post('/api/update', json=state)
+            resp = await session.post('/api/update', json=stateUpdate)
             print(resp.status)
             print(await resp.text())
 

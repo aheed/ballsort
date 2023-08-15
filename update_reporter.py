@@ -3,7 +3,7 @@ from state_update_model import StateUpdateModel
 class UpdateReporter(object):
     """Interface for reporting state"""
 
-    async def send_update(self, state: StateUpdateModel):
+    async def send_update(self, stateUpdate: StateUpdateModel):
         """Report state update"""
         pass
 
