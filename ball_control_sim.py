@@ -1,9 +1,7 @@
 import asyncio
-import aiohttp
-
-import requests
 
 from ball_control import BallControl, IllegalBallControlStateError
+from state_update_model import StateUpdateModel
 
 class BallControlSim(BallControl):
 
@@ -16,16 +14,16 @@ class BallControlSim(BallControl):
     y = 0
     moving_horizontally = False
     moving_vertically = False
-    backend = 'http://localhost:5167/'
-    client_session = None
-    client_lock = None
+    update_reporter = None
+
+    def __init__(self, update_reporter):
+        self.update_reporter = update_reporter
 
     async def __aenter__(self):
         return self
     
     async def __aexit__(self, *excinfo):
-        await self.client_session.close()
-        await asyncio.sleep(0.5)
+        await self.update_reporter.shutdown()
 
     def __set_position(self, x: int, y: int = 0):
         if (x < self.MIN_X or y < self.MIN_Y or x > self.MAX_X or y > self.MAX_Y):
@@ -37,19 +35,6 @@ class BallControlSim(BallControl):
     async def __delay(self, duration: float):
         await asyncio.sleep(duration * self.delay_mult)
 
-    def get_session(self):
-        if (self.client_session is None):
-            self.client_lock = asyncio.Lock()
-            self.client_session = aiohttp.ClientSession(self.backend)
-        return self.client_session
-    
-    async def send_update(self, json: any):
-        session = self.get_session()
-        async with self.client_lock:
-            resp = await session.post('/api/update', json=json)
-            print(resp.status)
-            print(await resp.text())
-
     async def move_relative(self, x: int, y: int = 0):
         
         newX = self.x + x
@@ -57,9 +42,8 @@ class BallControlSim(BallControl):
         self.__set_position(newX, newY)
         delayTask = asyncio.create_task(self.__delay(1.0))
         
-        stateobj = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY, "apa":78}}
-        await self.send_update(stateobj)
-
+        stateobj: StateUpdateModel = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY, "apa":78}}
+        await self.update_reporter.send_update(stateobj)
         await delayTask
 
     async def move_horizontally(self, distance: int):
