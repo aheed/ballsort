@@ -1,6 +1,6 @@
 # Ball Sort
 
-`python3 main.py`
+`python examples.py`
 
 ### Todo
 Implement a separate module to inject controller instances

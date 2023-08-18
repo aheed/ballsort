@@ -1,7 +1,8 @@
 import asyncio
 
 from ball_control import BallControl, IllegalBallControlStateError
-from state_update_model import StateUpdateModel
+from state_update_model import StateUpdateModel, getDefaultState
+from update_reporter import UpdateReporter
 
 class BallControlSim(BallControl):
 
@@ -14,15 +15,15 @@ class BallControlSim(BallControl):
     y = 0
     moving_horizontally = False
     moving_vertically = False
-    update_reporter = None
+    update_reporter: UpdateReporter
 
-    def __init__(self, update_reporter):
+    def __init__(self, update_reporter: UpdateReporter):
         self.update_reporter = update_reporter
 
     async def __aenter__(self):
         return self
     
-    async def __aexit__(self, *excinfo):
+    async def __aexit__(self, *_):
         await self.update_reporter.shutdown()
 
     def __set_position(self, x: int, y: int = 0):
@@ -42,7 +43,9 @@ class BallControlSim(BallControl):
         self.__set_position(newX, newY)
         delayTask = asyncio.create_task(self.__delay(1.0))
         
-        stateobj: StateUpdateModel = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY, "apa":78}}
+        #stateobj: StateUpdateModel = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY}}
+        oldState = getDefaultState() #temp!!!
+        stateobj: StateUpdateModel = {**oldState, "claw": {**oldState.claw, "pos": {"x": newX, "y": newY}}} 
         await self.update_reporter.send_update(stateobj)
         await delayTask
 
