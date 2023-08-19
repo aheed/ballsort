@@ -27,11 +27,11 @@ async def sequence_async(bc: BallControl):
     await bc.move_horizontally(-1)
 
 def example_async(bc: BallControl):
-    asyncio.run(sequence_async())
+    asyncio.run(sequence_async(bc))
 
 async def sequence_concurrent():
-    async with get_control_sim() as bc:
-       
+    bc = get_control_sim()
+    async with bc:
         t1 = asyncio.create_task(bc.move_vertically(2))
         t2 = asyncio.create_task(bc.move_horizontally(3))
         await t1

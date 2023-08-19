@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import asdict
 from ably import AblyRest
 
 from update_reporter import UpdateReporter
@@ -13,6 +14,6 @@ class AblyUpdateReporter(UpdateReporter):
     
 
     async def send_update(self, stateUpdate: StateUpdateModel):
-        channel = self.client.channels.get(stateUpdate["userId"])    
+        channel = self.client.channels.get(stateUpdate.userId)    
         async with self.client_lock:
-            await channel.publish('dontcareeventname', stateUpdate)
+            await channel.publish('dontcareeventname', asdict(stateUpdate))

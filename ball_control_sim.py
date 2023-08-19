@@ -1,7 +1,8 @@
 import asyncio
+from dataclasses import replace
 
 from ball_control import BallControl, IllegalBallControlStateError
-from state_update_model import StateUpdateModel, getDefaultState
+from state_update_model import StatePosition, StateUpdateModel, getDefaultState
 from update_reporter import UpdateReporter
 
 class BallControlSim(BallControl):
@@ -21,7 +22,7 @@ class BallControlSim(BallControl):
         self.update_reporter = update_reporter
 
     async def __aenter__(self):
-        return self
+        pass
     
     async def __aexit__(self, *_):
         await self.update_reporter.shutdown()
@@ -43,10 +44,17 @@ class BallControlSim(BallControl):
         self.__set_position(newX, newY)
         delayTask = asyncio.create_task(self.__delay(1.0))
         
-        #stateobj: StateUpdateModel = {"userId": "glen", "state": {"nofRows":4, "nofCols":5, "posX":newX, "posY":newY}}
-        oldState = getDefaultState() #temp!!!
-        stateobj: StateUpdateModel = {**oldState, "claw": {**oldState.claw, "pos": {"x": newX, "y": newY}}} 
-        await self.update_reporter.send_update(stateobj)
+        old_state = getDefaultState() #temp!!!
+        # Create a new instance with the Claw's "open" attribute set to False
+        #new_state = replace(old_state, claw=replace(old_state.claw, open=False))
+        new_state = replace(old_state, claw=replace(old_state.claw, pos=StatePosition(x = newX, y = newY)))
+
+        state_update: StateUpdateModel = StateUpdateModel(
+            userId="glen",
+            state=new_state
+        )
+
+        await self.update_reporter.send_update(state_update)
         await delayTask
 
     async def move_horizontally(self, distance: int):
@@ -60,7 +68,7 @@ class BallControlSim(BallControl):
         finally:
             self.moving_horizontally = False
 
-    async def move_vertically(self, distance: int):
+    async def move_vertically(self, distance: int) -> None:
         if (0 == distance):
             return
         if (self.moving_vertically):
