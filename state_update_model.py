@@ -35,10 +35,8 @@ class StateUpdateModel:
 
 def getDefaultState() -> StateModel:
     return StateModel(
-            nofRows=4,
-            nofCols=5,
-            balls=[StateBall(pos=StatePosition(x=3, y=4), color="blue")],
-            claw=Claw(pos=StatePosition(x=0, y=0), open=True),
-        )
-
-
+        nofRows=4,
+        nofCols=5,
+        balls=[StateBall(pos=StatePosition(x=3, y=4), color="blue")],
+        claw=Claw(pos=StatePosition(x=0, y=0), open=True),
+    )
