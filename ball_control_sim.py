@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import replace
 
 from ball_control import BallControl, IllegalBallControlStateError
-from state_update_model import StatePosition, StateUpdateModel, getDefaultState
+from state_update_model import StateModel, StatePosition, StateUpdateModel, getDefaultState
 from update_reporter import UpdateReporter
 
 class BallControlSim(BallControl):
@@ -14,8 +14,10 @@ class BallControlSim(BallControl):
     delay_mult = 1.0
     x = 0
     y = 0
+    claw_open = True
     moving_horizontally = False
     moving_vertically = False
+    operating_claw = False
     update_reporter: UpdateReporter
 
     def __init__(self, update_reporter: UpdateReporter):
@@ -26,6 +28,14 @@ class BallControlSim(BallControl):
     
     async def __aexit__(self, *_):
         await self.update_reporter.shutdown()
+
+    async def __send_update(self, new_state: StateModel):
+        state_update: StateUpdateModel = StateUpdateModel(
+                userId="glen",
+                state=new_state
+            )
+
+        await self.update_reporter.send_update(state_update)
 
     def __set_position(self, x: int, y: int = 0):
         if (x < self.MIN_X or y < self.MIN_Y or x > self.MAX_X or y > self.MAX_Y):
@@ -90,3 +100,25 @@ class BallControlSim(BallControl):
 
     def get_position(self) -> tuple[int, int]:
         return self.x, self.y
+
+    async def operate_claw(self, open: bool):
+        if (self.operating_claw):
+            raise IllegalBallControlStateError("Claw already opening or closing")
+        self.operating_claw = True
+        try:
+            self.claw_open = open
+            delayTask = asyncio.create_task(self.__delay(0.7))
+            
+            old_state = getDefaultState() #temp!!!
+            new_state = replace(old_state, claw=replace(old_state.claw, open=open))
+
+            await self.__send_update(new_state)
+            await delayTask
+        finally:
+            self.operating_claw = False
+
+    async def open_claw(self):
+        pass
+
+    async def close_claw(self):
+        pass

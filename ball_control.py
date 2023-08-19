@@ -19,8 +19,14 @@ class BallControl(object):
         """Move the manipulator arm horizontally"""
         pass
 
-    async def move_vertically(self, distance: int) -> None:
+    async def move_vertically(self, distance: int):
         """Move the manipulator arm vertically"""
+        pass
+
+    async def open_claw(self):
+        pass
+
+    async def close_claw(self):
         pass
             
     def move_horizontally_sync(self, distance: int):
