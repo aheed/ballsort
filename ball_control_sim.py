@@ -2,10 +2,11 @@ import asyncio
 from dataclasses import replace
 
 from ball_control import BallControl, IllegalBallControlStateError
-from state_update_model import StateModel, StatePosition, StateUpdateModel, getDefaultState
+from scenario_control import ScenarioControl
+from state_update_model import StateBall, StateModel, StatePosition, StateUpdateModel, getDefaultState
 from update_reporter import UpdateReporter
 
-class BallControlSim(BallControl):
+class BallControlSim(BallControl, ScenarioControl):
 
     MIN_X = 0
     MIN_Y = 0
@@ -27,10 +28,10 @@ class BallControlSim(BallControl):
     async def __aexit__(self, *_):
         await self.update_reporter.shutdown()
 
-    async def __send_update(self, new_state: StateModel):
+    async def __send_update(self):
         state_update: StateUpdateModel = StateUpdateModel(
                 userId="glen",
-                state=new_state
+                state=self.state
             )
 
         await self.update_reporter.send_update(state_update)
@@ -51,7 +52,7 @@ class BallControlSim(BallControl):
         self.__set_position(newX, newY)
         delayTask = asyncio.create_task(self.__delay(1.0))
 
-        await self.__send_update(self.state)
+        await self.__send_update()
         await delayTask
 
     async def move_horizontally(self, distance: int):
@@ -97,9 +98,9 @@ class BallControlSim(BallControl):
             delayTask = asyncio.create_task(self.__delay(0.7))
             
             old_state = getDefaultState() #temp!!!
-            new_state = replace(old_state, claw=replace(old_state.claw, open=open))
+            self.state = replace(self.state, claw=replace(old_state.claw, open=open))
 
-            await self.__send_update(new_state)
+            await self.__send_update()
             await delayTask
         finally:
             self.operating_claw = False
@@ -109,3 +110,7 @@ class BallControlSim(BallControl):
 
     async def close_claw(self):
         await self.__operate_claw(False)
+
+    async def set_scenario(self, balls: list[StateBall]):
+        self.state = replace(self.state, balls = balls)
+        await self.__send_update()
