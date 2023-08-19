@@ -12,9 +12,7 @@ class BallControlSim(BallControl):
     MAX_X = 3
     MAX_Y = 4
     delay_mult = 1.0
-    x = 0
-    y = 0
-    claw_open = True
+    state = getDefaultState()
     moving_horizontally = False
     moving_vertically = False
     operating_claw = False
@@ -40,31 +38,20 @@ class BallControlSim(BallControl):
     def __set_position(self, x: int, y: int = 0):
         if (x < self.MIN_X or y < self.MIN_Y or x > self.MAX_X or y > self.MAX_Y):
             raise Exception("coordinates out of bounds")
-        self.x = x;
-        self.y = y;
-        print(f"new position: {self.x}, {self.y}")
+        self.state = replace(self.state, claw=replace(self.state.claw, pos=StatePosition(x = x, y = y)))
+        print(f"new position: {x}, {y}")
     
     async def __delay(self, duration: float):
         await asyncio.sleep(duration * self.delay_mult)
 
     async def move_relative(self, x: int, y: int = 0):
         
-        newX = self.x + x
-        newY = self.y + y
+        newX = self.state.claw.pos.x + x
+        newY = self.state.claw.pos.y + y
         self.__set_position(newX, newY)
         delayTask = asyncio.create_task(self.__delay(1.0))
-        
-        old_state = getDefaultState() #temp!!!
-        # Create a new instance with the Claw's "open" attribute set to False
-        #new_state = replace(old_state, claw=replace(old_state.claw, open=False))
-        new_state = replace(old_state, claw=replace(old_state.claw, pos=StatePosition(x = newX, y = newY)))
 
-        state_update: StateUpdateModel = StateUpdateModel(
-            userId="glen",
-            state=new_state
-        )
-
-        await self.update_reporter.send_update(state_update)
+        await self.__send_update(self.state)
         await delayTask
 
     async def move_horizontally(self, distance: int):
@@ -99,9 +86,9 @@ class BallControlSim(BallControl):
         asyncio.run(self.move_relative(x, y))
 
     def get_position(self) -> tuple[int, int]:
-        return self.x, self.y
+        return self.state.claw.pos.x, self.state.claw.pos.y
 
-    async def operate_claw(self, open: bool):
+    async def __operate_claw(self, open: bool):
         if (self.operating_claw):
             raise IllegalBallControlStateError("Claw already opening or closing")
         self.operating_claw = True
@@ -118,7 +105,7 @@ class BallControlSim(BallControl):
             self.operating_claw = False
 
     async def open_claw(self):
-        pass
+        await self.__operate_claw(True)
 
     async def close_claw(self):
-        pass
+        await self.__operate_claw(False)
