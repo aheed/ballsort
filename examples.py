@@ -1,6 +1,7 @@
 import asyncio
 from ball_control import BallControl
 from control_factory import get_control_sim
+from scenarios import set_scenario1
 
 def single_command(bc: BallControl):
     bc.move_relative_sync(1, 0)
@@ -32,6 +33,7 @@ def example_async(bc: BallControl):
 async def sequence_concurrent():
     bc = get_control_sim()
     async with bc:
+        await set_scenario1(bc)
         t1 = asyncio.create_task(bc.move_vertically(2))
         t2 = asyncio.create_task(bc.move_horizontally(3))
         await t1

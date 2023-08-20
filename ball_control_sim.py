@@ -3,7 +3,7 @@ from dataclasses import replace
 
 from ball_control import BallControl, IllegalBallControlStateError
 from scenario_control import ScenarioControl
-from state_update_model import StateBall, StateModel, StatePosition, StateUpdateModel, getDefaultState
+from state_update_model import StateBall, StatePosition, StateUpdateModel, get_default_state
 from update_reporter import UpdateReporter
 
 class BallControlSim(BallControl, ScenarioControl):
@@ -13,7 +13,7 @@ class BallControlSim(BallControl, ScenarioControl):
     MAX_X = 3
     MAX_Y = 4
     delay_mult = 1.0
-    state = getDefaultState()
+    state = get_default_state()
     moving_horizontally = False
     moving_vertically = False
     operating_claw = False
@@ -97,8 +97,7 @@ class BallControlSim(BallControl, ScenarioControl):
             self.claw_open = open
             delayTask = asyncio.create_task(self.__delay(0.7))
             
-            old_state = getDefaultState() #temp!!!
-            self.state = replace(self.state, claw=replace(old_state.claw, open=open))
+            self.state = replace(self.state, claw=replace(self.state.claw, open=open))
 
             await self.__send_update()
             await delayTask
@@ -112,5 +111,6 @@ class BallControlSim(BallControl, ScenarioControl):
         await self.__operate_claw(False)
 
     async def set_scenario(self, balls: list[StateBall]):
+        self.state = get_default_state()
         self.state = replace(self.state, balls = balls)
         await self.__send_update()

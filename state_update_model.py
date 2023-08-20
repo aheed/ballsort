@@ -33,7 +33,7 @@ class StateUpdateModel:
     state: StateModel
 
 
-def getDefaultState() -> StateModel:
+def get_default_state() -> StateModel:
     return StateModel(
         nofRows=4,
         nofCols=5,
