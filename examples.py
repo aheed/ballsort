@@ -34,11 +34,14 @@ async def sequence_concurrent():
     bc = get_control_sim()
     async with bc:
         await set_scenario1(bc)
-        t1 = asyncio.create_task(bc.move_vertically(2))
-        t2 = asyncio.create_task(bc.move_horizontally(3))
+        t1 = asyncio.create_task(bc.move_vertically(4))
+        t2 = asyncio.create_task(bc.move_horizontally(3))        
         await t1
         await t2
 
+        t3 = asyncio.create_task(bc.close_claw())
+        await t3
+        
         t3 = asyncio.create_task(bc.move_vertically(-2))
         t4 = asyncio.create_task(bc.move_horizontally(-1))
         await t3

@@ -28,10 +28,12 @@ class BallControlSim(BallControl, ScenarioControl):
     async def __aexit__(self, *_):
         await self.update_reporter.shutdown()
 
-    async def __send_update(self):
+    async def __send_update(self, include_balls: bool = False):
+        state_to_send = self.state if (include_balls) else replace(self.state, balls = None)
+
         state_update: StateUpdateModel = StateUpdateModel(
                 userId="glen",
-                state=self.state
+                state=state_to_send
             )
 
         await self.update_reporter.send_update(state_update)
@@ -113,4 +115,4 @@ class BallControlSim(BallControl, ScenarioControl):
     async def set_scenario(self, balls: list[StateBall]):
         self.state = get_default_state()
         self.state = replace(self.state, balls = balls)
-        await self.__send_update()
+        await self.__send_update(include_balls = True)

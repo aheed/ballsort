@@ -186,6 +186,7 @@
       let ballInClaw;
 
       ///////////////
+      /*
       balls.push(createBall(0, 1, 'blue'));
       balls.push(createBall(0, 2, 'red'));
       balls.push(createBall(0, 3, 'pink'));
@@ -196,6 +197,7 @@
 
       ballInClaw = createBallInClaw('orange');
       ballHolderInClawElem.appendChild(ballInClaw.wrapper);
+      */
       ///////////////
 
 
@@ -240,7 +242,11 @@
         updatePositions();
       }
 
-      const clawClickHandler = (e) => {
+      const openOrCloseClaw = (open) => {
+        if (clawOpen == open) {
+          return;
+        }
+
         clawOpen = !clawOpen;
         if(clawOpen) {
           if (!!ballInClaw) {
@@ -261,6 +267,10 @@
           }
         }
         updatePositions();
+      }
+
+      const clawClickHandler = (e) => {
+        openOrCloseClaw(!clawOpen);
       }
 
       hButton.addEventListener("click", horizClickHandler);
@@ -295,8 +305,24 @@
 
       const handleMessage = (newState) => {
         console.log("handleMessage ", newState);
-        hPosIndex = newState.posX;
-        vPosIndex = newState.posY;
+
+        if (!!newState.balls ) {
+          if (!!ballInClaw) {
+            ballHolderInClawElem.removeChild(ballInClaw.wrapper);
+            ballInClaw = null;
+          }
+
+          balls.forEach((ball) => {
+            moversSvg.removeChild(ball.wrapper);
+          });
+          balls = newState.balls.map((ball) => createBall(ball.pos.x, ball.pos.y, ball.color));
+        }
+
+        hPosIndex = newState.claw.pos.x;
+        vPosIndex = newState.claw.pos.y;
+        
+        openOrCloseClaw(newState.claw.open);
+
         updatePositions();
       }
 
