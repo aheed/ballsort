@@ -47,12 +47,12 @@ class BallControlSim(BallControl, ScenarioControl):
     async def __delay(self, duration: float):
         await asyncio.sleep(duration * self.delay_mult)
 
-    async def move_relative(self, x: int, y: int = 0):
+    async def move_relative(self, x: int, y: int = 0, delay: float = 1.0):
         
         newX = self.state.claw.pos.x + x
         newY = self.state.claw.pos.y + y
         self.__set_position(newX, newY)
-        delayTask = asyncio.create_task(self.__delay(1.0))
+        delayTask = asyncio.create_task(self.__delay(delay))
 
         await self.__send_update()
         await delayTask
@@ -64,7 +64,7 @@ class BallControlSim(BallControl, ScenarioControl):
             raise IllegalBallControlStateError("Already moving horizontally")
         self.moving_horizontally = True
         try:
-            await self.move_relative(distance)
+            await self.move_relative(distance, delay=1.0)
         finally:
             self.moving_horizontally = False
 
@@ -75,7 +75,7 @@ class BallControlSim(BallControl, ScenarioControl):
             raise IllegalBallControlStateError("Already moving vertically")
         self.moving_vertically = True
         try:
-            await self.move_relative(0, distance)
+            await self.move_relative(0, distance, delay=1.5)
         finally:
             self.moving_vertically = False
             
@@ -97,7 +97,7 @@ class BallControlSim(BallControl, ScenarioControl):
         self.operating_claw = True
         try:
             self.claw_open = open
-            delayTask = asyncio.create_task(self.__delay(0.7))
+            delayTask = asyncio.create_task(self.__delay(0.3))
             
             self.state = replace(self.state, claw=replace(self.state.claw, open=open))
 
