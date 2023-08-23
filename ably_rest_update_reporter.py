@@ -1,5 +1,5 @@
 import asyncio
-import aiohttp
+import httpx
 import base64
 from update_reporter import UpdateReporter
 from state_update_model import StateUpdateModel
@@ -21,7 +21,7 @@ class AblyRestUpdateReporter(UpdateReporter):
 
     def get_session(self):
         if (self.client_session is None):
-            self.client_session = aiohttp.ClientSession(base_url=self.ably_host, headers={'Authorization': f'Basic {self.apiKey}'})
+            self.client_session = httpx.AsyncClient(base_url=self.ably_host, headers={'Authorization': f'Basic {self.apiKey}'})
         return self.client_session
     
     async def send_update(self, stateUpdate: StateUpdateModel):
@@ -30,10 +30,9 @@ class AblyRestUpdateReporter(UpdateReporter):
             url_path = f'/channels/{stateUpdate.userId}/messages'
             body = asdict(AblyMessageBody("dc", stateUpdate))
             resp = await session.post(url_path, json=body)
-            print(resp.status)
-            print(await resp.text())
+            print(resp.text)
 
     async def shutdown(self):
         if (self.client_session is not None):
-            await self.client_session.close()
+            await self.client_session.aclose()
             await asyncio.sleep(0.5)
