@@ -319,6 +319,18 @@
       
       channel.subscribe(receiveAblyMessage);
 
+      // Listen to PostMessage messages
+      window.addEventListener(
+        "message",
+        (event) => {
+          event.preventDefault();
+          console.log("zzz got a message");
+          console.log(event.origin);
+          console.log(event.data);
+        },
+        false,
+      );
+
     </script>
   </body>
 </html>

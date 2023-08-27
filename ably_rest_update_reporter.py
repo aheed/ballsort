@@ -21,13 +21,13 @@ class AblyRestUpdateReporter(UpdateReporter):
 
     def get_session(self):
         if (self.client_session is None):
-            self.client_session = httpx.AsyncClient(base_url=self.ably_host, headers={'Authorization': f'Basic {self.apiKey}'})
+            self.client_session = httpx.AsyncClient(headers={'Authorization': f'Basic {self.apiKey}'})
         return self.client_session
     
     async def send_update(self, stateUpdate: StateUpdateModel):
         session = self.get_session()
         async with self.client_lock:
-            url_path = f'/channels/{stateUpdate.userId}/messages'
+            url_path = f'{self.ably_host}/channels/{stateUpdate.userId}/messages'
             body = asdict(AblyMessageBody("dc", stateUpdate))
             resp = await session.post(url_path, json=body)
             print(resp.text)
