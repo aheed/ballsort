@@ -324,9 +324,9 @@
         "message",
         (event) => {
           event.preventDefault();
-          console.log("zzz got a message");
-          console.log(event.origin);
-          console.log(event.data);
+          console.log(`state update from ${event.origin}`);
+          const stateUpdateMsg = JSON.parse(event.data);
+          handleMessage(stateUpdateMsg.state);
         },
         false,
       );
