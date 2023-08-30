@@ -100,6 +100,7 @@ class BallControlSim(BallControl, ScenarioControl):
             delayTask = asyncio.create_task(self.__delay(0.3))
             
             self.state = replace(self.state, claw=replace(self.state.claw, open=open))
+            print(f"new claw open state: {open}")
 
             await self.__send_update()
             await delayTask
