@@ -18,7 +18,31 @@
         }
         button {
           font-size: 40px;
+          position: absolute;
         }
+        #button-container {
+          width: 100px;
+          height: 100px;
+          margin-left: 80px;
+          margin-top: 50px;
+        }
+
+        #move-up {
+          transform: translateY(-55px);
+        }
+
+        #move-down {
+          transform: translateY(55px);
+        }
+
+        #move-left {
+          transform: translateX(-68px);
+        }
+
+        #move-right {
+          transform: translateX(68px);
+        }
+
     </style>
   </head>
   <body>
@@ -27,17 +51,23 @@
         Sorry, your browser does not support inline SVG.
     </svg>
     <br>
-    <button id="move-horiz" type="button">↔️</button>
-    <button id="move-down" type="button">↕️</button>
-    <button id="claw-toggle" type="button">🤏</button>
+    <div id="button-container">
+      <button id="move-up" type="button">⬆️</button>
+      <button id="move-down" type="button">⬇️</button>
+      <button id="move-left" type="button">⬅️</button>
+      <button id="move-right" type="button">➡️</button>  
+      <button id="claw-toggle" type="button">🤏</button>
+    </div>
     <div id="status-msg">starting up...</div>
     <script type="module">
       const myCallback = (msg) => {
         console.log(msg, "yes!");
       }      
       const statusMsg = document.querySelector("#status-msg");
-      const hButton = document.querySelector("#move-horiz");
+      const upButton = document.querySelector("#move-up");
       const downButton = document.querySelector("#move-down");
+      const leftButton = document.querySelector("#move-left");
+      const rightButton = document.querySelector("#move-right");
       const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
       const hDistance = 100;
@@ -236,8 +266,42 @@
       }
 
       const downClickHandler = (e) => {
+        if ((vPosIndex + 1) >= vPositions) {
+          // Already at bottom. Do nothing.
+          return;
+        }
         console.log("move down");
-        vPosIndex = (vPosIndex + 1) % vPositions;
+        vPosIndex = vPosIndex + 1;
+        updatePositions();
+      }
+
+      const upClickHandler = (e) => {
+        if (vPosIndex == 0) {
+          // Already at top. Do nothing.
+          return;
+        }
+        console.log("move up");
+        vPosIndex = vPosIndex - 1;
+        updatePositions();
+      }
+
+      const leftClickHandler = (e) => {
+        if (hPosIndex == 0) {
+          // Already at leftmost position. Do nothing.
+          return;
+        }
+        console.log("move left");
+        hPosIndex = hPosIndex - 1;
+        updatePositions();
+      }
+
+      const rightClickHandler = (e) => {
+        if ((hPosIndex+1) >= hPositions) {
+          // Already at rightmost position. Do nothing.
+          return;
+        }
+        console.log("move right");
+        hPosIndex = hPosIndex + 1;
         updatePositions();
       }
 
@@ -272,10 +336,12 @@
         openOrCloseClaw(!clawOpen);
       }
 
-      hButton.addEventListener("click", horizClickHandler);
+      upButton.addEventListener("click", upClickHandler);
       downButton.addEventListener("click", downClickHandler);
+      leftButton.addEventListener("click", leftClickHandler);
+      rightButton.addEventListener("click", rightClickHandler);
       clawButton.addEventListener("click", clawClickHandler);
-      hButton.focus();
+      clawButton.focus();
       updatePositions();
 
       console.log("so far so good");
