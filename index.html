@@ -5,15 +5,22 @@
     <meta charset="utf-8">
     <title>Ball Sorter</title>
     <style>
+        :root {
+          --trans-multiplier: 1.0;
+          --test-duration: 1s;
+          --h-duration: 1s;
+          --v-duration: 1.5s;
+          --claw-duration: 0.3s;
+        }
         .h-move {
-            transition: transform 1s;
+            transition: transform var(--h-duration);
         }
         .v-move {
-            transition: transform 1.5s;
+            transition: transform var(--v-duration);
             transition-timing-function: ease-in-out;
         }
         .claw {
-          transition: transform 0.3s;
+          transition: transform var(--claw-duration);
           transition-timing-function: ease-in;
         }
         button {
@@ -69,6 +76,7 @@
       const rightButton = document.querySelector("#move-right");
       const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
+      const rootElem = document.querySelector(":root");
       const hDistance = 100;
       const vTopSpace = 180;
       const vDistance = 50;
@@ -89,6 +97,9 @@
       const clawOpenAngleDegrees = 58;
       const clawClosedAngleDegrees = 25;
       const ballHolderOffset = 24;
+      const baseHDurationSeconds = 1.5;
+      const baseVDurationSeconds = 1.0;
+      const baseClawDurationSeconds = 0.3;
       let clawOpen = false;
 
       let hPosIndex = 0;
@@ -228,6 +239,12 @@
       */
       ///////////////
 
+      const updateDurations = (multiplier) => {
+        rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
+        rootElem.style.setProperty('--v-duration', `${baseVDurationSeconds * multiplier}s`);
+        rootElem.style.setProperty('--claw-duration', `${baseClawDurationSeconds * multiplier}s`);
+      }
+
 
       const updatePositions = () => {
         hPos = hPosIndex * hDistance;
@@ -335,6 +352,7 @@
       rightButton.addEventListener("click", rightClickHandler);
       clawButton.addEventListener("click", clawClickHandler);
       clawButton.focus();
+      updateDurations(1.0);
       updatePositions();
 
       console.log("so far so good");
@@ -342,6 +360,10 @@
       
       const handleMessage = (newState) => {
         console.log("handleMessage ", newState);
+
+        if (!!newState.delay_multiplier) {
+          updateDurations(newState.delay_multiplier);
+        }
 
         if (!!newState.balls ) {
           if (!!ballInClaw) {
