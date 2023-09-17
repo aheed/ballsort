@@ -258,12 +258,6 @@
         });
       }
 
-      const horizClickHandler = (e) => {
-        console.log("move horizontally");
-        hPosIndex = (hPosIndex + 1) % hPositions;
-        updatePositions();
-      }
-
       const downClickHandler = (e) => {
         if ((vPosIndex + 1) >= vPositions) {
           // Already at bottom. Do nothing.
