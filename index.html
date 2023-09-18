@@ -365,6 +365,14 @@
 
         const newState = msg.state;
 
+        if (!!newState.max_x) {
+          maxX = newState.max_x;
+        }
+
+        if (!!newState.max_y) {
+          maxY = newState.max_y;
+        }
+
         if (!!newState.balls ) {
           if (!!ballInClaw) {
             ballHolderInClawElem.removeChild(ballInClaw.wrapper);
