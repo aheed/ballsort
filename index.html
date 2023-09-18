@@ -79,8 +79,7 @@
       const vTopSpace = 100;
       const vDistance = 40;
       const vOffsetClaw = -25;
-      const hPositions = 4;
-      const vPositions = 5;
+      
       const nofMovers = 20;
       const cb0Min = 0.55;
       const cb0Max = 0.95;
@@ -98,10 +97,11 @@
       const baseHDurationSeconds = 1.0;
       const baseVDurationSeconds = 1.5;
       const baseClawDurationSeconds = 0.3;
-      let clawOpen = false;
 
+      let clawOpen = false;
+      let maxX = 3;
+      let maxY = 4;
       let hPosIndex = 0;
-      let hPos = 0;
       let vPosIndex = 0;
 
       const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
@@ -245,7 +245,7 @@
 
 
       const updatePositions = () => {
-        hPos = hPosIndex * hDistance;
+        const hPos = hPosIndex * hDistance;
         console.log(`hPosIx: ${hPosIndex} vPosIx: ${vPosIndex} hPos:${hPos}`);
         const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + vPosIndex * vDistance, vMovers.length - 2);
         hMovers.forEach((mover, i) => {
@@ -274,7 +274,7 @@
       }
 
       const downClickHandler = (e) => {
-        if ((vPosIndex + 1) >= vPositions) {
+        if (vPosIndex >= maxY) {
           // Already at bottom. Do nothing.
           return;
         }
@@ -304,7 +304,7 @@
       }
 
       const rightClickHandler = (e) => {
-        if ((hPosIndex+1) >= hPositions) {
+        if (hPosIndex >= maxX) {
           // Already at rightmost position. Do nothing.
           return;
         }
