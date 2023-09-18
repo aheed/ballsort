@@ -358,12 +358,14 @@
       console.log("so far so good");
       statusMsg.innerText = "";
       
-      const handleMessage = (newState) => {
-        console.log("handleMessage ", newState);
+      const handleMessage = (msg) => {
+        console.log("handleMessage ", msg);
 
-        if (!!newState.delay_multiplier) {
-          updateDurations(newState.delay_multiplier);
+        if (!!msg.delay_multiplier) {
+          updateDurations(msg.delay_multiplier);
         }
+
+        newState = msg.state;
 
         if (!!newState.balls ) {
           if (!!ballInClaw) {
@@ -392,7 +394,7 @@
           event.preventDefault();
           console.log(`state update from ${event.origin}`);
           const stateUpdateMsg = JSON.parse(event.data);
-          handleMessage(stateUpdateMsg.state);
+          handleMessage(stateUpdateMsg);
         },
         false,
       );
