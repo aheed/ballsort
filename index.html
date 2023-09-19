@@ -48,9 +48,17 @@
           transform: translateX(68px);
         }
 
+        #backdrop {
+          z-index: -1;
+          position: absolute;
+        }
+
     </style>
   </head>
   <body>
+    <svg id="backdrop" height="500" width="500">
+      Sorry, your browser does not support inline SVG.
+    </svg>
     <svg id="movers-svg" height="500" width="500">
         Sorry, your browser does not support inline SVG.
     </svg>
@@ -64,9 +72,6 @@
     </div>
     <div id="status-msg">starting up...</div>
     <script type="module">
-      const myCallback = (msg) => {
-        console.log(msg, "yes!");
-      }      
       const statusMsg = document.querySelector("#status-msg");
       const upButton = document.querySelector("#move-up");
       const downButton = document.querySelector("#move-down");
@@ -222,7 +227,6 @@
       let balls = [];
       let ballInClaw;
 
-      ///////////////
       
       balls.push(createBall(0, 1, 'blue'));
       balls.push(createBall(0, 2, 'red'));
@@ -235,7 +239,31 @@
       /*ballInClaw = createBallInClaw('orange');
       ballHolderInClawElem.appendChild(ballInClaw.wrapper);
       */
+
+
       ///////////////
+      const backDrop = document.querySelector("#backdrop");
+
+      for (let xIndex=0; xIndex<=maxX; xIndex++) {
+        const rectLeftSpace = 52;
+        const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
+
+        for (let yIndex=0; yIndex<=maxY; yIndex++) {
+          const rectTopSpace = vTopSpace + 51;
+          const y = rectTopSpace + yIndex * vDistance;
+          let rectangle = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
+          rectangle.setAttribute('x', `${x}`);
+          rectangle.setAttribute('y', `${y}`);
+          rectangle.setAttribute('width', `${hDistance - 1}`);
+          rectangle.setAttribute('height', `${vDistance - 1}`);
+          //rectangle.setAttribute('stroke', 'none');
+          rectangle.setAttribute('fill', 'lightgray');
+          //rectangle.setAttribute('stroke-width', '3');          
+          backDrop.appendChild(rectangle);
+        }
+      }
+
+      ////
 
       const updateDurations = (multiplier) => {
         rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
