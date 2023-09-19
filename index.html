@@ -203,38 +203,51 @@
         return ret;
       }
 
-      const createBallWrapper = (color) => {
+      const createBallLabel = (text) => {
+        const ret = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+        ret.setAttribute('x', `${originX-6}`);
+        ret.setAttribute('y', `${originY+5}`);
+        ret.textContent = text;
+        ret.setAttribute("font-size", "20");
+        ret.setAttribute("font-weight", "bold");
+        ret.setAttribute("font-family", "arial");
+        return ret;
+      }
+
+      const createBallWrapper = (color, text) => {
         const grayBall = createBallCircle('lightgray');
         const coloredBall = createBallCircle(color);
+        const label = createBallLabel(text);
         const wrapper = document.createElementNS("http://www.w3.org/2000/svg", 'g');
         wrapper.classList.add('ball-wrapper');
         wrapper.appendChild(grayBall);
         wrapper.appendChild(coloredBall);
+        wrapper.appendChild(label);
         return wrapper;
       }
 
-      const createBall = (hIndex, vIndex, color) => {
-        const wrapper = createBallWrapper(color);
+      const createBall = (hIndex, vIndex, color, text) => {
+        const wrapper = createBallWrapper(color, text);
         moversSvg.appendChild(wrapper);
-        return {hIndex: hIndex, vIndex: vIndex, wrapper: wrapper, color: color};
+        return {hIndex: hIndex, vIndex: vIndex, wrapper: wrapper, color: color, text: text};
       }
 
-      const createBallInClaw = (color) => {
-        const wrapper = createBallWrapper(color);
-        return {wrapper: wrapper, color: color};
+      const createBallInClaw = (color, text) => {
+        const wrapper = createBallWrapper(color, text);
+        return {wrapper: wrapper, color: color, text: text};
       }
 
       let balls = [];
       let ballInClaw;
 
       
-      balls.push(createBall(0, 1, 'blue'));
-      balls.push(createBall(0, 2, 'red'));
-      balls.push(createBall(0, 3, 'pink'));
-      balls.push(createBall(0, 4, 'green'));
-      balls.push(createBall(1, 4, 'green'));
-      balls.push(createBall(2, 4, 'green'));
-      balls.push(createBall(3, 4, 'green'));
+      balls.push(createBall(0, 1, 'lightblue', '?'));
+      balls.push(createBall(0, 2, 'red', '0'));
+      balls.push(createBall(0, 3, 'pink', '1'));
+      balls.push(createBall(0, 4, 'green', '23'));
+      balls.push(createBall(1, 4, 'green', 'A'));
+      balls.push(createBall(2, 4, 'green', 'B'));
+      balls.push(createBall(3, 4, 'green', 'x'));
 
       /*ballInClaw = createBallInClaw('orange');
       ballHolderInClawElem.appendChild(ballInClaw.wrapper);
@@ -372,7 +385,7 @@
         if(clawOpen) {
           if (!!ballInClaw) {
             console.log("Dropping ball");
-            balls.push(createBall(hPosIndex, vPosIndex, ballInClaw.color));
+            balls.push(createBall(hPosIndex, vPosIndex, ballInClaw.color, ballInClaw.text));
             ballHolderInClawElem.removeChild(ballInClaw.wrapper);
             ballInClaw = null;
           }
@@ -381,7 +394,7 @@
           const ballToGrab = balls.find((ball) => ball.hIndex == hPosIndex && ball.vIndex == vPosIndex);
           if (!!ballToGrab) {
             console.log("Grabbing ball");
-            ballInClaw = createBallInClaw(ballToGrab.color);
+            ballInClaw = createBallInClaw(ballToGrab.color, ballToGrab.text);
             ballHolderInClawElem.appendChild(ballInClaw.wrapper);
             moversSvg.removeChild(ballToGrab.wrapper);
             balls = balls.filter((ball) => ball != ballToGrab);
@@ -430,7 +443,7 @@
           balls.forEach((ball) => {
             moversSvg.removeChild(ball.wrapper);
           });
-          balls = newState.balls.map((ball) => createBall(ball.pos.x, ball.pos.y, ball.color));
+          balls = newState.balls.map((ball) => createBall(ball.pos.x, ball.pos.y, ball.color, ball.label));
         }
 
         hPosIndex = newState.claw.pos.x;
