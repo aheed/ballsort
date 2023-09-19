@@ -48,9 +48,17 @@
           transform: translateX(68px);
         }
 
+        #backdrop {
+          z-index: -1;
+          position: absolute;
+        }
+
     </style>
   </head>
   <body>
+    <svg id="backdrop" height="500" width="500">
+      Sorry, your browser does not support inline SVG.
+    </svg>
     <svg id="movers-svg" height="500" width="500">
         Sorry, your browser does not support inline SVG.
     </svg>
@@ -64,9 +72,6 @@
     </div>
     <div id="status-msg">starting up...</div>
     <script type="module">
-      const myCallback = (msg) => {
-        console.log(msg, "yes!");
-      }      
       const statusMsg = document.querySelector("#status-msg");
       const upButton = document.querySelector("#move-up");
       const downButton = document.querySelector("#move-down");
@@ -75,12 +80,11 @@
       const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
       const rootElem = document.querySelector(":root");
-      const hDistance = 100;
-      const vTopSpace = 180;
-      const vDistance = 50;
+      const hDistance = 60;
+      const vTopSpace = 100;
+      const vDistance = 40;
       const vOffsetClaw = -25;
-      const hPositions = 4;
-      const vPositions = 5;
+      
       const nofMovers = 20;
       const cb0Min = 0.55;
       const cb0Max = 0.95;
@@ -98,10 +102,11 @@
       const baseHDurationSeconds = 1.0;
       const baseVDurationSeconds = 1.5;
       const baseClawDurationSeconds = 0.3;
-      let clawOpen = false;
 
+      let clawOpen = false;
+      let maxX = 3;
+      let maxY = 4;
       let hPosIndex = 0;
-      let hPos = 0;
       let vPosIndex = 0;
 
       const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
@@ -222,7 +227,6 @@
       let balls = [];
       let ballInClaw;
 
-      ///////////////
       
       balls.push(createBall(0, 1, 'blue'));
       balls.push(createBall(0, 2, 'red'));
@@ -235,7 +239,53 @@
       /*ballInClaw = createBallInClaw('orange');
       ballHolderInClawElem.appendChild(ballInClaw.wrapper);
       */
-      ///////////////
+
+      const recreateBackdrop = () => {
+        const backDrop = document.querySelector("#backdrop");
+
+        while (backDrop.firstChild) {
+          backDrop.removeChild(backDrop.firstChild);
+        }
+
+        for (let xIndex=0; xIndex<=maxX; xIndex++) {
+          const rectLeftSpace = 52;
+          const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
+
+          for (let yIndex=0; yIndex<=maxY; yIndex++) {
+            const rectTopSpace = vTopSpace + 51;
+            const y = rectTopSpace + yIndex * vDistance;
+            let rectangle = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
+            rectangle.setAttribute('x', `${x}`);
+            rectangle.setAttribute('y', `${y}`);
+            rectangle.setAttribute('width', `${hDistance - 1}`);
+            rectangle.setAttribute('height', `${vDistance - 1}`);
+            rectangle.setAttribute('fill', 'lightgray');
+            backDrop.appendChild(rectangle);
+
+            if (xIndex == 0) {
+              var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+              text.setAttribute('x', `${x - 20}`);
+              text.setAttribute('y', `${y + 25}`);
+              text.textContent = `${yIndex}`;
+              text.setAttribute("font-size", "24");
+              backDrop.appendChild(text);
+            }
+
+            if (yIndex == maxY) {
+              var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+              text.setAttribute('x', `${x + 22}`);
+              text.setAttribute('y', `${y + 59}`);
+              text.textContent = `${xIndex}`;
+              text.setAttribute("font-size", "24");
+              backDrop.appendChild(text);
+            }
+          }
+
+          
+        }
+      }
+
+      recreateBackdrop();
 
       const updateDurations = (multiplier) => {
         rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
@@ -245,7 +295,7 @@
 
 
       const updatePositions = () => {
-        hPos = hPosIndex * hDistance;
+        const hPos = hPosIndex * hDistance;
         console.log(`hPosIx: ${hPosIndex} vPosIx: ${vPosIndex} hPos:${hPos}`);
         const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + vPosIndex * vDistance, vMovers.length - 2);
         hMovers.forEach((mover, i) => {
@@ -274,7 +324,7 @@
       }
 
       const downClickHandler = (e) => {
-        if ((vPosIndex + 1) >= vPositions) {
+        if (vPosIndex >= maxY) {
           // Already at bottom. Do nothing.
           return;
         }
@@ -304,7 +354,7 @@
       }
 
       const rightClickHandler = (e) => {
-        if ((hPosIndex+1) >= hPositions) {
+        if (hPosIndex >= maxX) {
           // Already at rightmost position. Do nothing.
           return;
         }
@@ -364,6 +414,12 @@
         }
 
         const newState = msg.state;
+
+        if (!!newState.max_x) {
+          maxX = newState.max_x;
+          maxY = newState.max_y;
+          recreateBackdrop();
+        }
 
         if (!!newState.balls ) {
           if (!!ballInClaw) {
