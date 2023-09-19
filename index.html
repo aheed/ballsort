@@ -240,30 +240,52 @@
       ballHolderInClawElem.appendChild(ballInClaw.wrapper);
       */
 
+      const recreateBackdrop = () => {
+        const backDrop = document.querySelector("#backdrop");
 
-      ///////////////
-      const backDrop = document.querySelector("#backdrop");
+        while (backDrop.firstChild) {
+          backDrop.removeChild(backDrop.firstChild);
+        }
 
-      for (let xIndex=0; xIndex<=maxX; xIndex++) {
-        const rectLeftSpace = 52;
-        const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
+        for (let xIndex=0; xIndex<=maxX; xIndex++) {
+          const rectLeftSpace = 52;
+          const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
 
-        for (let yIndex=0; yIndex<=maxY; yIndex++) {
-          const rectTopSpace = vTopSpace + 51;
-          const y = rectTopSpace + yIndex * vDistance;
-          let rectangle = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
-          rectangle.setAttribute('x', `${x}`);
-          rectangle.setAttribute('y', `${y}`);
-          rectangle.setAttribute('width', `${hDistance - 1}`);
-          rectangle.setAttribute('height', `${vDistance - 1}`);
-          //rectangle.setAttribute('stroke', 'none');
-          rectangle.setAttribute('fill', 'lightgray');
-          //rectangle.setAttribute('stroke-width', '3');          
-          backDrop.appendChild(rectangle);
+          for (let yIndex=0; yIndex<=maxY; yIndex++) {
+            const rectTopSpace = vTopSpace + 51;
+            const y = rectTopSpace + yIndex * vDistance;
+            let rectangle = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
+            rectangle.setAttribute('x', `${x}`);
+            rectangle.setAttribute('y', `${y}`);
+            rectangle.setAttribute('width', `${hDistance - 1}`);
+            rectangle.setAttribute('height', `${vDistance - 1}`);
+            rectangle.setAttribute('fill', 'lightgray');
+            backDrop.appendChild(rectangle);
+
+            if (xIndex == 0) {
+              var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+              text.setAttribute('x', `${x - 20}`);
+              text.setAttribute('y', `${y + 25}`);
+              text.textContent = `${yIndex}`;
+              text.setAttribute("font-size", "24");
+              backDrop.appendChild(text);
+            }
+
+            if (yIndex == maxY) {
+              var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+              text.setAttribute('x', `${x + 22}`);
+              text.setAttribute('y', `${y + 59}`);
+              text.textContent = `${xIndex}`;
+              text.setAttribute("font-size", "24");
+              backDrop.appendChild(text);
+            }
+          }
+
+          
         }
       }
 
-      ////
+      recreateBackdrop();
 
       const updateDurations = (multiplier) => {
         rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
