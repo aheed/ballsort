@@ -9,6 +9,7 @@
           --h-duration: 1s;
           --v-duration: 1.5s;
           --claw-duration: 0.3s;
+          --spotlight-duration: 0.4s;
         }
         .h-move {
             transition: transform var(--h-duration);
@@ -53,12 +54,24 @@
           position: absolute;
         }
 
+        #spotlight {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 0, 0.6); /* Yellow with some transparency */
+            box-shadow: 0 0 20px 10px rgba(255, 255, 0, 0.6); /* Add blur effect */
+            position: absolute;
+            transition: transform var(--spotlight-duration);
+            transition-timing-function: cubic-bezier(.72,.09,.37,1.39);
+        }
+
     </style>
   </head>
   <body>
     <svg id="backdrop" height="500" width="500">
       Sorry, your browser does not support inline SVG.
     </svg>
+    <div id="spotlight"></div>
     <svg id="movers-svg" height="500" width="500">
         Sorry, your browser does not support inline SVG.
     </svg>
@@ -79,11 +92,14 @@
       const rightButton = document.querySelector("#move-right");
       const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
+      const spotlight = document.querySelector("#spotlight");
       const rootElem = document.querySelector(":root");
       const hDistance = 60;
       const vTopSpace = 100;
       const vDistance = 40;
       const vOffsetClaw = -25;
+      const vSportLightOffset = 51;
+      const hSportLightOffset = 31;
       
       const nofMovers = 20;
       const cb0Min = 0.55;
@@ -102,12 +118,16 @@
       const baseHDurationSeconds = 1.0;
       const baseVDurationSeconds = 1.5;
       const baseClawDurationSeconds = 0.3;
+      const baseSpotlightDurationSeconds = 0.4;
 
       let clawOpen = false;
       let maxX = 3;
       let maxY = 4;
       let hPosIndex = 0;
       let vPosIndex = 0;
+      let spotlightOn = true;
+      let hSpotlightPosIndex = 0;
+      let vSpotlightPosIndex = 0;
 
       const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
       const ipolCurried = (min, max, maxIndex) => (index) => ipol(index, min, max, maxIndex);
@@ -311,6 +331,7 @@
         rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
         rootElem.style.setProperty('--v-duration', `${baseVDurationSeconds * multiplier}s`);
         rootElem.style.setProperty('--claw-duration', `${baseClawDurationSeconds * multiplier}s`);
+        rootElem.style.setProperty('--spotlight-duration', `${baseSpotlightDurationSeconds * multiplier}s`);
       }
 
 
@@ -335,6 +356,11 @@
         const clawAngleDegrees = clawOpen ? clawOpenAngleDegrees : clawClosedAngleDegrees;
         clawRight.style.transform = `rotate(${-clawAngleDegrees}deg)`;
         clawLeft.style.transform = `rotate(${clawAngleDegrees}deg)`;
+
+        spotlight.style.visibility = spotlightOn ? "visible" : "hidden";
+        const spotLightX = hSportLightOffset + hSpotlightPosIndex * hDistance;
+        const spotLightY = vTopSpace + vSportLightOffset + vSpotlightPosIndex * vDistance;
+        spotlight.style.transform = `translate(${spotLightX}px, ${spotLightY}px)`;
 
         balls.forEach((ball) => {
           const hPosBall = ball.hIndex * hDistance;
@@ -439,6 +465,12 @@
           maxX = newState.max_x;
           maxY = newState.max_y;
           recreateBackdrop();
+        }
+
+        if (!!newState.spotlight) {
+          spotlightOn = newState.spotlight.on;
+          hSpotlightPosIndex = newState.spotlight.x;
+          vSpotlightPosIndex = newState.spotlight.y;
         }
 
         if (!!newState.balls ) {
