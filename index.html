@@ -94,12 +94,13 @@
       const moversSvg = document.querySelector("#movers-svg");
       const spotlight = document.querySelector("#spotlight");
       const rootElem = document.querySelector(":root");
+      const backDrop = document.querySelector("#backdrop");
       const hDistance = 60;
       const vTopSpace = 100;
       const vDistance = 40;
       const vOffsetClaw = -25;
       const vSportLightOffset = 51;
-      const hSportLightOffset = 31;
+      const hSportLightOffset = 30;
       
       const nofMovers = 20;
       const cb0Min = 0.55;
@@ -280,18 +281,13 @@
       ballHolderInClawElem.appendChild(ballInClaw.wrapper);
       */
 
-      const recreateBackdrop = () => {
-        const backDrop = document.querySelector("#backdrop");
 
-        while (backDrop.firstChild) {
-          backDrop.removeChild(backDrop.firstChild);
-        }
-
-        for (let xIndex=0; xIndex<=maxX; xIndex++) {
-          const rectLeftSpace = 52;
+      const createHighlight = (xMin, xMax, yMin, yMax, color) => {
+        for (let xIndex=xMin; xIndex<=xMax; xIndex++) {
+          const rectLeftSpace = 50;
           const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
 
-          for (let yIndex=0; yIndex<=maxY; yIndex++) {
+          for (let yIndex=yMin; yIndex<=yMax; yIndex++) {
             const rectTopSpace = vTopSpace + 51;
             const y = rectTopSpace + yIndex * vDistance;
             let rectangle = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
@@ -299,30 +295,51 @@
             rectangle.setAttribute('y', `${y}`);
             rectangle.setAttribute('width', `${hDistance - 1}`);
             rectangle.setAttribute('height', `${vDistance - 1}`);
-            rectangle.setAttribute('fill', 'lightgray');
+            rectangle.setAttribute('fill', color);
             backDrop.appendChild(rectangle);
-
-            if (xIndex == 0) {
-              var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-              text.setAttribute('x', `${x - 20}`);
-              text.setAttribute('y', `${y + 25}`);
-              text.textContent = `${yIndex}`;
-              text.setAttribute("font-size", "24");
-              backDrop.appendChild(text);
-            }
-
-            if (yIndex == maxY) {
-              var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-              text.setAttribute('x', `${x + 22}`);
-              text.setAttribute('y', `${y + 59}`);
-              text.textContent = `${xIndex}`;
-              text.setAttribute("font-size", "24");
-              backDrop.appendChild(text);
-            }
           }
-
-          
         }
+      }
+
+      const createGridLabels = () => {
+
+        for (let xIndex=0; xIndex<=maxX; xIndex++) {
+          const rectLeftSpace = 50;
+          const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
+          const y = vTopSpace + 52 + vDistance * maxY;
+
+          var text = document.createElementNS("http://www.w3.org/2000/svg", "text");          
+          text.setAttribute('x', `${x + 22}`);
+          text.setAttribute('y', `${y + 59}`);
+          text.textContent = `${xIndex}`;
+          text.setAttribute("font-size", "24");
+          backDrop.appendChild(text);
+        }
+
+        for (let yIndex=0; yIndex<=maxY; yIndex++) {
+          const rectLeftSpace = 20;
+          const x = rectLeftSpace;
+          const rectTopSpace = vTopSpace + 51;
+          const y = rectTopSpace + yIndex * vDistance;
+
+          var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute('x', `${x - 20}`);
+          text.setAttribute('y', `${y + 25}`);
+          text.textContent = `${yIndex}`;
+          text.setAttribute("font-size", "24");
+          
+          backDrop.appendChild(text);
+        }
+      }
+
+      const recreateBackdrop = () => {
+        
+        while (backDrop.firstChild) {
+          backDrop.removeChild(backDrop.firstChild);
+        }
+
+        createHighlight(0, maxX, 0, maxY, "lightgray");
+        createGridLabels();
       }
 
       recreateBackdrop();
