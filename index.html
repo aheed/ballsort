@@ -493,6 +493,11 @@
           recreateBackdrop();
         }
 
+        if (!!newState.highlights) {
+          highlights = newState.highlights;
+          recreateBackdrop();
+        }
+
         if (!!newState.spotlight) {
           spotlightOn = newState.spotlight.on;
           hSpotlightPosIndex = newState.spotlight.x;
