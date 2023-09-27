@@ -126,7 +126,7 @@
       let maxY = 4;
       let hPosIndex = 0;
       let vPosIndex = 0;
-      let spotlightOn = true;
+      let spotlightOn = false;
       let hSpotlightPosIndex = 0;
       let vSpotlightPosIndex = 0;
 
@@ -281,8 +281,12 @@
       ballHolderInClawElem.appendChild(ballInClaw.wrapper);
       */
 
+      /*let highlights =[
+        {xMin: 2, xMax: 3, yMin:2, yMax:3, color: "lightblue"},
+        {xMin: 0, xMax: 0, yMin:0, yMax:3, color: "lightyellow"}];*/
+      let highlights =[];
 
-      const createHighlight = (xMin, xMax, yMin, yMax, color) => {
+      const createHighlight = ({xMin, xMax, yMin, yMax, color}) => {
         for (let xIndex=xMin; xIndex<=xMax; xIndex++) {
           const rectLeftSpace = 50;
           const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
@@ -333,12 +337,17 @@
       }
 
       const recreateBackdrop = () => {
-        
+
         while (backDrop.firstChild) {
           backDrop.removeChild(backDrop.firstChild);
         }
 
-        createHighlight(0, maxX, 0, maxY, "lightgray");
+        //createHighlight(0, maxX, 0, maxY, "lightgray");
+        createHighlight({xMin: 0, xMax: maxX, yMin:0, yMax:maxY, color: "lightgray"});
+
+        highlights.forEach(highlight => {
+          createHighlight(highlight);
+        }); 
         createGridLabels();
       }
 
