@@ -9,6 +9,7 @@
           --h-duration: 1s;
           --v-duration: 1.5s;
           --claw-duration: 0.3s;
+          --spotlight-duration: 0.4s;
         }
         .h-move {
             transition: transform var(--h-duration);
@@ -53,12 +54,24 @@
           position: absolute;
         }
 
+        #spotlight {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 0, 0.6); /* Yellow with some transparency */
+            box-shadow: 0 0 20px 10px rgba(255, 255, 0, 0.6); /* Add blur effect */
+            position: absolute;
+            transition: transform var(--spotlight-duration);
+            transition-timing-function: cubic-bezier(.72,.09,.37,1.39);
+        }
+
     </style>
   </head>
   <body>
     <svg id="backdrop" height="500" width="500">
       Sorry, your browser does not support inline SVG.
     </svg>
+    <div id="spotlight"></div>
     <svg id="movers-svg" height="500" width="500">
         Sorry, your browser does not support inline SVG.
     </svg>
@@ -79,11 +92,15 @@
       const rightButton = document.querySelector("#move-right");
       const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
+      const spotlight = document.querySelector("#spotlight");
       const rootElem = document.querySelector(":root");
+      const backDrop = document.querySelector("#backdrop");
       const hDistance = 60;
       const vTopSpace = 100;
       const vDistance = 40;
       const vOffsetClaw = -25;
+      const vSportLightOffset = 51;
+      const hSportLightOffset = 30;
       
       const nofMovers = 20;
       const cb0Min = 0.55;
@@ -102,12 +119,16 @@
       const baseHDurationSeconds = 1.0;
       const baseVDurationSeconds = 1.5;
       const baseClawDurationSeconds = 0.3;
+      const baseSpotlightDurationSeconds = 0.4;
 
       let clawOpen = false;
       let maxX = 3;
       let maxY = 4;
       let hPosIndex = 0;
       let vPosIndex = 0;
+      let spotlightOn = false;
+      let hSpotlightPosIndex = 0;
+      let vSpotlightPosIndex = 0;
 
       const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
       const ipolCurried = (min, max, maxIndex) => (index) => ipol(index, min, max, maxIndex);
@@ -260,18 +281,17 @@
       ballHolderInClawElem.appendChild(ballInClaw.wrapper);
       */
 
-      const recreateBackdrop = () => {
-        const backDrop = document.querySelector("#backdrop");
+      /*let highlights =[
+        {xMin: 2, xMax: 3, yMin:2, yMax:3, color: "lightblue"},
+        {xMin: 0, xMax: 0, yMin:0, yMax:3, color: "lightyellow"}];*/
+      let highlights =[];
 
-        while (backDrop.firstChild) {
-          backDrop.removeChild(backDrop.firstChild);
-        }
-
-        for (let xIndex=0; xIndex<=maxX; xIndex++) {
-          const rectLeftSpace = 52;
+      const createHighlight = ({xMin, xMax, yMin, yMax, color}) => {
+        for (let xIndex=xMin; xIndex<=xMax; xIndex++) {
+          const rectLeftSpace = 50;
           const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
 
-          for (let yIndex=0; yIndex<=maxY; yIndex++) {
+          for (let yIndex=yMin; yIndex<=yMax; yIndex++) {
             const rectTopSpace = vTopSpace + 51;
             const y = rectTopSpace + yIndex * vDistance;
             let rectangle = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
@@ -279,30 +299,55 @@
             rectangle.setAttribute('y', `${y}`);
             rectangle.setAttribute('width', `${hDistance - 1}`);
             rectangle.setAttribute('height', `${vDistance - 1}`);
-            rectangle.setAttribute('fill', 'lightgray');
+            rectangle.setAttribute('fill', color);
             backDrop.appendChild(rectangle);
-
-            if (xIndex == 0) {
-              var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-              text.setAttribute('x', `${x - 20}`);
-              text.setAttribute('y', `${y + 25}`);
-              text.textContent = `${yIndex}`;
-              text.setAttribute("font-size", "24");
-              backDrop.appendChild(text);
-            }
-
-            if (yIndex == maxY) {
-              var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-              text.setAttribute('x', `${x + 22}`);
-              text.setAttribute('y', `${y + 59}`);
-              text.textContent = `${xIndex}`;
-              text.setAttribute("font-size", "24");
-              backDrop.appendChild(text);
-            }
           }
-
-          
         }
+      }
+
+      const createGridLabels = () => {
+
+        for (let xIndex=0; xIndex<=maxX; xIndex++) {
+          const rectLeftSpace = 50;
+          const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
+          const y = vTopSpace + 52 + vDistance * maxY;
+
+          var text = document.createElementNS("http://www.w3.org/2000/svg", "text");          
+          text.setAttribute('x', `${x + 22}`);
+          text.setAttribute('y', `${y + 59}`);
+          text.textContent = `${xIndex}`;
+          text.setAttribute("font-size", "24");
+          backDrop.appendChild(text);
+        }
+
+        for (let yIndex=0; yIndex<=maxY; yIndex++) {
+          const rectLeftSpace = 20;
+          const x = rectLeftSpace;
+          const rectTopSpace = vTopSpace + 51;
+          const y = rectTopSpace + yIndex * vDistance;
+
+          var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute('x', `${x - 20}`);
+          text.setAttribute('y', `${y + 25}`);
+          text.textContent = `${yIndex}`;
+          text.setAttribute("font-size", "24");
+          
+          backDrop.appendChild(text);
+        }
+      }
+
+      const recreateBackdrop = () => {
+
+        while (backDrop.firstChild) {
+          backDrop.removeChild(backDrop.firstChild);
+        }
+
+        createHighlight({xMin: 0, xMax: maxX, yMin:0, yMax:maxY, color: "lightgray"});
+
+        highlights.forEach(highlight => {
+          createHighlight(highlight);
+        }); 
+        createGridLabels();
       }
 
       recreateBackdrop();
@@ -311,6 +356,7 @@
         rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
         rootElem.style.setProperty('--v-duration', `${baseVDurationSeconds * multiplier}s`);
         rootElem.style.setProperty('--claw-duration', `${baseClawDurationSeconds * multiplier}s`);
+        rootElem.style.setProperty('--spotlight-duration', `${baseSpotlightDurationSeconds * multiplier}s`);
       }
 
 
@@ -335,6 +381,11 @@
         const clawAngleDegrees = clawOpen ? clawOpenAngleDegrees : clawClosedAngleDegrees;
         clawRight.style.transform = `rotate(${-clawAngleDegrees}deg)`;
         clawLeft.style.transform = `rotate(${clawAngleDegrees}deg)`;
+
+        spotlight.style.visibility = spotlightOn ? "visible" : "hidden";
+        const spotLightX = hSportLightOffset + hSpotlightPosIndex * hDistance;
+        const spotLightY = vTopSpace + vSportLightOffset + vSpotlightPosIndex * vDistance;
+        spotlight.style.transform = `translate(${spotLightX}px, ${spotLightY}px)`;
 
         balls.forEach((ball) => {
           const hPosBall = ball.hIndex * hDistance;
@@ -439,6 +490,17 @@
           maxX = newState.max_x;
           maxY = newState.max_y;
           recreateBackdrop();
+        }
+
+        if (!!newState.highlights) {
+          highlights = newState.highlights;
+          recreateBackdrop();
+        }
+
+        if (!!newState.spotlight) {
+          spotlightOn = newState.spotlight.on;
+          hSpotlightPosIndex = newState.spotlight.x;
+          vSpotlightPosIndex = newState.spotlight.y;
         }
 
         if (!!newState.balls ) {
