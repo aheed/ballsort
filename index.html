@@ -65,6 +65,13 @@
             transition-timing-function: cubic-bezier(.72,.09,.37,1.39);
         }
 
+        #status-msg {
+          margin-top: 15px;
+          font-size: 20;
+          font-weight: "bold";
+          font-family: "arial";
+        }
+
     </style>
   </head>
   <body>
@@ -513,6 +520,14 @@
             moversSvg.removeChild(ball.wrapper);
           });
           balls = newState.balls.map((ball) => createBall(ball.pos.x, ball.pos.y, ball.color, ball.label));
+        }
+
+        if (!!newState.elapsed) {
+          statusMsg.innerText =  `Virtual time elapsed: ${newState.elapsed.toFixed(2)} seconds ${newState.goal_accomplished ? "✅" : ""}`;
+        }
+
+        if (!!newState.goal_accomplished) {
+
         }
 
         hPosIndex = newState.claw.pos.x;
