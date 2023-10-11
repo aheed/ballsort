@@ -1,0 +1,66 @@
+:root {
+  --h-duration: 1s;
+  --v-duration: 1.5s;
+  --claw-duration: 0.3s;
+  --spotlight-duration: 0.4s;
+}
+.h-move {
+  transition: transform var(--h-duration);
+}
+.v-move {
+  transition: transform var(--v-duration);
+  transition-timing-function: ease-in-out;
+}
+.claw {
+  transition: transform var(--claw-duration);
+  transition-timing-function: ease-in;
+}
+button {
+  font-size: 40px;
+  position: absolute;
+}
+#button-container {
+  width: 100px;
+  height: 100px;
+  margin-left: 80px;
+  margin-top: 50px;
+}
+
+#move-up {
+  transform: translateY(-55px);
+}
+
+#move-down {
+  transform: translateY(55px);
+}
+
+#move-left {
+  transform: translateX(-68px);
+}
+
+#move-right {
+  transform: translateX(68px);
+}
+
+#backdrop {
+  z-index: -1;
+  position: absolute;
+}
+
+#spotlight {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 0, 0.6); /* Yellow with some transparency */
+  box-shadow: 0 0 20px 10px rgba(255, 255, 0, 0.6); /* Add blur effect */
+  position: absolute;
+  transition: transform var(--spotlight-duration);
+  transition-timing-function: cubic-bezier(0.72, 0.09, 0.37, 1.39);
+}
+
+#status-msg {
+  margin-top: 15px;
+  font-size: 20;
+  font-weight: "bold";
+  font-family: "arial";
+}
