@@ -23,8 +23,12 @@
       <button id="claw-toggle" type="button">🤏</button>
     </div>
     <div id="status-msg">starting up...</div>
-    <script src="backdrop.js"></script>
+    <script type="module" src="constants.js"></script>
+    <script type="module" src="backdrop.js"></script>
     <script type="module">
+      import {hDistance, vDistance, vTopSpace, originX, originY} from "./constants.js";
+      import {recreateBackdrop} from "./backdrop.js";
+
       const statusMsg = document.querySelector("#status-msg");
       const upButton = document.querySelector("#move-up");
       const downButton = document.querySelector("#move-down");
@@ -33,10 +37,7 @@
       const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
       const spotlight = document.querySelector("#spotlight");
-      const rootElem = document.querySelector(":root");
-      const hDistance = 60;
-      const vTopSpace = 100;
-      const vDistance = 40;
+      const rootElem = document.querySelector(":root");      
       const vOffsetClaw = -25;
       const vSportLightOffset = 51;
       const hSportLightOffset = 30;
@@ -50,8 +51,7 @@
       const cb2Max = 0.6;
       const cb3Min = 1.0;
       const cb3Max = 1.4;
-      const originX = 50;
-      const originY = 70;
+
       const clawOpenAngleDegrees = 58;
       const clawClosedAngleDegrees = 25;
       const ballHolderOffset = 24;
@@ -152,52 +152,59 @@
       });
 
       const createBallCircle = (color) => {
-        const ret = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-        ret.setAttribute('stroke', 'black');
-        ret.setAttribute('fill', color);
-        ret.setAttribute('cx', `${originX}`);
-        ret.setAttribute('cy', `${originY}`);
-        ret.setAttribute('r', '18');
-        ret.setAttribute('stroke-width', '2');
-        ret.classList.add('ball');
+        const ret = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        ret.setAttribute("stroke", "black");
+        ret.setAttribute("fill", color);
+        ret.setAttribute("cx", `${originX}`);
+        ret.setAttribute("cy", `${originY}`);
+        ret.setAttribute("r", "18");
+        ret.setAttribute("stroke-width", "2");
+        ret.classList.add("ball");
         return ret;
-      }
+      };
 
       const createBallLabel = (text) => {
-        const ret = document.createElementNS("http://www.w3.org/2000/svg", 'text');
-        ret.setAttribute('x', `${originX-6}`);
-        ret.setAttribute('y', `${originY+6}`);
+        const ret = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        ret.setAttribute("x", `${originX - 6}`);
+        ret.setAttribute("y", `${originY + 6}`);
         ret.setAttribute("font-size", "20");
         ret.setAttribute("font-weight", "bold");
         ret.setAttribute("font-family", "arial");
 
-        const tspan = document.createElementNS("http://www.w3.org/2000/svg", 'tspan');
+        const tspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
         tspan.setAttribute("dx", "6");
         tspan.textContent = text;
-        tspan.style['text-align'] = "center";
-        tspan.style['text-anchor'] = "middle";
+        tspan.style["text-align"] = "center";
+        tspan.style["text-anchor"] = "middle";
 
         ret.appendChild(tspan);
         return ret;
-      }
+      };
 
       const createBallWrapper = (color, text) => {
-        const grayBall = createBallCircle('lightgray');
+        const grayBall = createBallCircle("lightgray");
         const coloredBall = createBallCircle(color);
         const label = createBallLabel(text);
-        const wrapper = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        wrapper.classList.add('ball-wrapper');
+        const wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        wrapper.classList.add("ball-wrapper");
         wrapper.appendChild(grayBall);
         wrapper.appendChild(coloredBall);
         wrapper.appendChild(label);
         return wrapper;
-      }
+      };
 
       const createBall = (hIndex, vIndex, color, text) => {
         const wrapper = createBallWrapper(color, text);
         moversSvg.appendChild(wrapper);
-        return {hIndex: hIndex, vIndex: vIndex, wrapper: wrapper, color: color, text: text};
-      }
+        return {
+          hIndex: hIndex,
+          vIndex: vIndex,
+          wrapper: wrapper,
+          color: color,
+          text: text,
+        };
+      };
+
 
       const createBallInClaw = (color, text) => {
         const wrapper = createBallWrapper(color, text);
@@ -225,7 +232,7 @@
         {xMin: 0, xMax: 0, yMin:0, yMax:3, color: "lightyellow"}];*/
       let highlights =[];
       
-      recreateBackdrop(maxX, maxY, hDistance, vDistance, vTopSpace, highlights);
+      recreateBackdrop(maxX, maxY, highlights);
 
       const updateDurations = (multiplier) => {
         rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
@@ -364,12 +371,12 @@
         if (!!newState.max_x) {
           maxX = newState.max_x;
           maxY = newState.max_y;
-          recreateBackdrop(maxX, maxY, hDistance, vDistance, vTopSpace, highlights);
+          recreateBackdrop(maxX, maxY, highlights);
         }
 
         if (!!newState.highlights) {
           highlights = newState.highlights;
-          recreateBackdrop(maxX, maxY, hDistance, vDistance, vTopSpace, highlights);
+          recreateBackdrop(maxX, maxY, highlights);
         }
 
         if (!!newState.spotlight) {

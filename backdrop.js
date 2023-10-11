@@ -1,4 +1,6 @@
-const _createHighlight = ({ xMin, xMax, yMin, yMax, color }, hDistance, vDistance, vTopSpace) => {
+import {hDistance, vDistance, vTopSpace} from "./constants.js";
+
+const _createHighlight = ({ xMin, xMax, yMin, yMax, color }) => {
   const backDrop = document.querySelector("#backdrop");
 
   for (let xIndex = xMin; xIndex <= xMax; xIndex++) {
@@ -22,7 +24,7 @@ const _createHighlight = ({ xMin, xMax, yMin, yMax, color }, hDistance, vDistanc
   }
 };
 
-const _createGridLabels = (maxX, maxY, hDistance, vDistance, vTopSpace) => {
+const _createGridLabels = (maxX, maxY) => {
   const backDrop = document.querySelector("#backdrop");
 
   for (let xIndex = 0; xIndex <= maxX; xIndex++) {
@@ -54,7 +56,7 @@ const _createGridLabels = (maxX, maxY, hDistance, vDistance, vTopSpace) => {
   }
 };
 
-const recreateBackdrop = (maxX, maxY, hDistance, vDistance, vTopSpace, highlights) => {
+export const recreateBackdrop = (maxX, maxY, highlights) => {
   const backDrop = document.querySelector("#backdrop");
 
   while (backDrop.firstChild) {
@@ -67,10 +69,10 @@ const recreateBackdrop = (maxX, maxY, hDistance, vDistance, vTopSpace, highlight
     yMin: 0,
     yMax: maxY,
     color: "lightgray",
-  }, hDistance, vDistance, vTopSpace);
+  });
 
   highlights.forEach((highlight) => {
-    _createHighlight(highlight, hDistance, vDistance, vTopSpace);
+    _createHighlight(highlight);
   });
-  _createGridLabels(maxX, maxY, hDistance, vDistance, vTopSpace);
+  _createGridLabels(maxX, maxY);
 };
