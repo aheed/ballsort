@@ -23,6 +23,7 @@
       <button id="claw-toggle" type="button">🤏</button>
     </div>
     <div id="status-msg">starting up...</div>
+    <script src="backdrop.js"></script>
     <script type="module">
       const statusMsg = document.querySelector("#status-msg");
       const upButton = document.querySelector("#move-up");
@@ -33,7 +34,6 @@
       const moversSvg = document.querySelector("#movers-svg");
       const spotlight = document.querySelector("#spotlight");
       const rootElem = document.querySelector(":root");
-      const backDrop = document.querySelector("#backdrop");
       const hDistance = 60;
       const vTopSpace = 100;
       const vDistance = 40;
@@ -224,72 +224,8 @@
         {xMin: 2, xMax: 3, yMin:2, yMax:3, color: "lightblue"},
         {xMin: 0, xMax: 0, yMin:0, yMax:3, color: "lightyellow"}];*/
       let highlights =[];
-
-      const createHighlight = ({xMin, xMax, yMin, yMax, color}) => {
-        for (let xIndex=xMin; xIndex<=xMax; xIndex++) {
-          const rectLeftSpace = 50;
-          const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
-
-          for (let yIndex=yMin; yIndex<=yMax; yIndex++) {
-            const rectTopSpace = vTopSpace + 51;
-            const y = rectTopSpace + yIndex * vDistance;
-            let rectangle = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
-            rectangle.setAttribute('x', `${x}`);
-            rectangle.setAttribute('y', `${y}`);
-            rectangle.setAttribute('width', `${hDistance - 1}`);
-            rectangle.setAttribute('height', `${vDistance - 1}`);
-            rectangle.setAttribute('fill', color);
-            backDrop.appendChild(rectangle);
-          }
-        }
-      }
-
-      const createGridLabels = () => {
-
-        for (let xIndex=0; xIndex<=maxX; xIndex++) {
-          const rectLeftSpace = 50;
-          const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
-          const y = vTopSpace + 52 + vDistance * maxY;
-
-          var text = document.createElementNS("http://www.w3.org/2000/svg", "text");          
-          text.setAttribute('x', `${x + 22}`);
-          text.setAttribute('y', `${y + 59}`);
-          text.textContent = `${xIndex}`;
-          text.setAttribute("font-size", "24");
-          backDrop.appendChild(text);
-        }
-
-        for (let yIndex=0; yIndex<=maxY; yIndex++) {
-          const rectLeftSpace = 20;
-          const x = rectLeftSpace;
-          const rectTopSpace = vTopSpace + 51;
-          const y = rectTopSpace + yIndex * vDistance;
-
-          var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          text.setAttribute('x', `${x - 20}`);
-          text.setAttribute('y', `${y + 25}`);
-          text.textContent = `${yIndex}`;
-          text.setAttribute("font-size", "24");
-          
-          backDrop.appendChild(text);
-        }
-      }
-
-      const recreateBackdrop = () => {
-
-        while (backDrop.firstChild) {
-          backDrop.removeChild(backDrop.firstChild);
-        }
-
-        createHighlight({xMin: 0, xMax: maxX, yMin:0, yMax:maxY, color: "lightgray"});
-
-        highlights.forEach(highlight => {
-          createHighlight(highlight);
-        }); 
-        createGridLabels();
-      }
-
-      recreateBackdrop();
+      
+      recreateBackdrop(maxX, maxY, hDistance, vDistance, vTopSpace, highlights);
 
       const updateDurations = (multiplier) => {
         rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
@@ -428,12 +364,12 @@
         if (!!newState.max_x) {
           maxX = newState.max_x;
           maxY = newState.max_y;
-          recreateBackdrop();
+          recreateBackdrop(maxX, maxY, hDistance, vDistance, vTopSpace, highlights);
         }
 
         if (!!newState.highlights) {
           highlights = newState.highlights;
-          recreateBackdrop();
+          recreateBackdrop(maxX, maxY, hDistance, vDistance, vTopSpace, highlights);
         }
 
         if (!!newState.spotlight) {
