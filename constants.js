@@ -1,7 +1,5 @@
-const hDistance = 60;
-const vTopSpace = 100;
-const vDistance = 40;
-const originX = 50;
-const originY = 70;
-
-export {hDistance, vDistance, vTopSpace, originX, originY};
+export const hDistance = 60;
+export const vTopSpace = 100;
+export const vDistance = 40;
+export const originX = 50;
+export const originY = 70;
