@@ -26,10 +26,12 @@
     <script type="module" src="constants.js"></script>
     <script type="module" src="backdrop.js"></script>
     <script type="module" src="ball.js"></script>
+    <script type="module" src="claw.js"></script>
     <script type="module">
       import {hDistance, vDistance, vTopSpace, originX, originY} from "./constants.js";
       import {recreateBackdrop} from "./backdrop.js";
       import {createBallWrapper, createBall} from "./ball.js";
+      import {createClaw, updateClawPosition} from "./claw.js";
 
       const statusMsg = document.querySelector("#status-msg");
       const upButton = document.querySelector("#move-up");
@@ -73,6 +75,8 @@
         ballHolderInClawElem: null,
         ballInClaw: null
       }
+
+      let claws = [];
       
       let maxX = 3;
       let maxY = 4;
@@ -80,6 +84,14 @@
       let spotlightOn = false;
       let hSpotlightPosIndex = 0;
       let vSpotlightPosIndex = 0;
+
+      // temp
+      const claw0 = createClaw();
+      claws.push(claw0);
+      const claw1 = createClaw();
+      claw1.hPosIndex = 3;
+      claws.push(claw1);
+      // end temp
 
       const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
       const ipolCurried = (min, max, maxIndex) => (index) => ipol(index, min, max, maxIndex);
@@ -193,6 +205,9 @@
 
 
       const updatePositions = () => {
+        claws.forEach((claw) => {
+          updateClawPosition(claw);
+        });
         const hPos = claw.hPosIndex * hDistance;
         console.log(`hPosIx: ${claw.hPosIndex} vPosIx: ${claw.vPosIndex} hPos:${hPos}`);
         const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + claw.vPosIndex * vDistance, claw.vMovers.length - 2);
