@@ -170,3 +170,11 @@ export const updateClawPosition = (claw) => {
   claw.clawRight.style.transform = `rotate(${-clawAngleDegrees}deg)`;
   claw.clawLeft.style.transform = `rotate(${clawAngleDegrees}deg)`;
 };
+
+export const deleteClaw = (claw) => {
+  const moversSvg = document.querySelector("#movers-svg");
+
+  claw.vMovers.forEach((vMover) => {
+    moversSvg.removeChild(vMover);
+  });
+};

@@ -31,7 +31,7 @@
       import {hDistance, vDistance, vTopSpace, originX, originY} from "./constants.js";
       import {recreateBackdrop} from "./backdrop.js";
       import {createBallWrapper, createBall} from "./ball.js";
-      import {createClaw, updateClawPosition} from "./claw.js";
+      import {createClaw, updateClawPosition, deleteClaw} from "./claw.js";
 
       const statusMsg = document.querySelector("#status-msg");
       const upButton = document.querySelector("#move-up");
@@ -64,18 +64,6 @@
       const baseClawDurationSeconds = 0.3;
       const baseSpotlightDurationSeconds = 0.4;
 
-      let claw = {
-        clawOpen: false,
-        hPosIndex: 0,
-        vPosIndex: 0,
-        clawLeft: null,
-        clawRight: null,
-        hMovers: [],
-        vMovers: [],
-        ballHolderInClawElem: null,
-        ballInClaw: null
-      }
-
       let claws = [];
       
       let maxX = 3;
@@ -93,82 +81,7 @@
       claws.push(claw1);
       // end temp
 
-      const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
-      const ipolCurried = (min, max, maxIndex) => (index) => ipol(index, min, max, maxIndex);
-      const ipolCurriedMax = (maxIndex) => (min, max) => ipolCurried(min, max, maxIndex);
-      const ipolCurriedMaxFun = ipolCurriedMax(nofMovers - 1);
-      const ipFun0 = ipolCurriedMaxFun(cb0Min, cb0Max);
-      const ipFun1 = ipolCurriedMaxFun(cb1Min, cb1Max);
-      const ipFun2 = ipolCurriedMaxFun(cb2Min, cb2Max);
-      const ipFun3 = ipolCurriedMaxFun(cb3Min, cb3Max);
 
-      const setClawAttributes = (elem) => {
-        elem.setAttribute('fill', "none");
-        elem.setAttribute('stroke', "black");
-        elem.setAttribute('stroke-width', "8");
-        elem.setAttribute('transform-origin', `${originX}px ${originY}px`);
-        elem.classList.add('claw');
-      }
-            
-      for (let i=0; i<nofMovers; i++) {
-        const vMover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        vMover.classList.add('v-move');
-        claw.vMovers.push(vMover);
-        let mover;
-        if (i < (nofMovers - 1)) {
-          mover = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-          mover.setAttribute('stroke', 'none');
-          mover.setAttribute('fill', 'black');
-          mover.setAttribute('cx', `${originX}`);
-          mover.setAttribute('cy', `${originY}`);
-          mover.setAttribute('r', '11');
-          mover.setAttribute('stroke-width', '3');
-        }
-        else {
-          mover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-          const ballHolder = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-          ballHolder.style.transform = `translateY(${ballHolderOffset}px)`;
-          mover.appendChild(ballHolder);
-          claw.ballHolderInClawElem = ballHolder;
-          vMover.classList.add('claw-wrapper');
-          claw.clawRight = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-          claw.clawRight.setAttribute('id', "claw-right");
-          claw.clawRight.setAttribute('d', `M${originX},${originY} a20,20 0 0,1 0,40`);
-          setClawAttributes(claw.clawRight);
-          mover.appendChild(claw.clawRight);
-
-          claw.clawLeft = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-          claw.clawLeft.setAttribute('id', "claw-left");
-          claw.clawLeft.setAttribute('d', `M${originX},${originY} a20,20 0 0,0 0,40`);
-          setClawAttributes(claw.clawLeft);
-          mover.appendChild(claw.clawLeft);
-
-          const clawHinge = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-          clawHinge.setAttribute('fill', 'black');
-          clawHinge.setAttribute('cx', `${originX}`);
-          clawHinge.setAttribute('cy', `${originY - 2}`);
-          clawHinge.setAttribute('r', '6');
-          clawHinge.setAttribute('stroke', 'none');
-          mover.appendChild(clawHinge);
-
-          const clawBolt = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-          clawBolt.setAttribute('fill', 'white');
-          clawBolt.setAttribute('cx', `${originX}`);
-          clawBolt.setAttribute('cy', `${originY - 2}`);
-          clawBolt.setAttribute('r', '2');
-          clawBolt.setAttribute('stroke', 'none');
-          mover.appendChild(clawBolt);
-        }
-        const transFun = `cubic-bezier(${ipFun0(i)}, ${ipFun1(i)}, ${ipFun2(i)}, ${ipFun3(i)}`;
-        mover.style['transition-timing-function'] = transFun;
-        mover.classList.add('h-move');
-        claw.hMovers.push(mover);
-        vMover.appendChild(mover);
-      }
-
-      claw.vMovers.forEach(vMover => {
-        moversSvg.appendChild(vMover);
-      });
 
       const createBallInClaw = (color, text) => {
         const wrapper = createBallWrapper(color, text);
@@ -208,26 +121,6 @@
         claws.forEach((claw) => {
           updateClawPosition(claw);
         });
-        const hPos = claw.hPosIndex * hDistance;
-        console.log(`hPosIx: ${claw.hPosIndex} vPosIx: ${claw.vPosIndex} hPos:${hPos}`);
-        const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + claw.vPosIndex * vDistance, claw.vMovers.length - 2);
-        claw.hMovers.forEach((mover, i) => {
-            mover.style.transform = `translateX(${hPos}px)`;
-        });
-        claw.vMovers.forEach((mover, i) => {
-          let index = i;
-          let offset = -15;
-          if (mover.classList.contains('claw-wrapper')) {
-            index = index - 1;
-            offset = 1;
-          }
-
-          let vPos = vPosFun(index) + offset;
-          mover.style.transform = `translateY(${vPos}px)`;
-        });
-        const clawAngleDegrees = claw.clawOpen ? clawOpenAngleDegrees : clawClosedAngleDegrees;
-        claw.clawRight.style.transform = `rotate(${-clawAngleDegrees}deg)`;
-        claw.clawLeft.style.transform = `rotate(${clawAngleDegrees}deg)`;
 
         spotlight.style.visibility = spotlightOn ? "visible" : "hidden";
         const spotLightX = hSpotLightOffset + hSpotlightPosIndex * hDistance;
@@ -242,46 +135,46 @@
       }
 
       const downClickHandler = (e) => {
-        if (claw.vPosIndex >= maxY) {
+        if (claws[0].vPosIndex >= maxY) {
           // Already at bottom. Do nothing.
           return;
         }
         console.log("move down");
-        claw.vPosIndex = claw.vPosIndex + 1;
+        claws[0].vPosIndex = claws[0].vPosIndex + 1;
         updatePositions();
       }
 
       const upClickHandler = (e) => {
-        if (claw.vPosIndex == 0) {
+        if (claws[0].vPosIndex == 0) {
           // Already at top. Do nothing.
           return;
         }
         console.log("move up");
-        claw.vPosIndex = claw.vPosIndex - 1;
+        claws[0].vPosIndex = claws[0].vPosIndex - 1;
         updatePositions();
       }
 
       const leftClickHandler = (e) => {
-        if (claw.hPosIndex == 0) {
+        if (claws[0].hPosIndex == 0) {
           // Already at leftmost position. Do nothing.
           return;
         }
         console.log("move left");
-        claw.hPosIndex = claw.hPosIndex - 1;
+        claws[0].hPosIndex = claws[0].hPosIndex - 1;
         updatePositions();
       }
 
       const rightClickHandler = (e) => {
-        if (claw.hPosIndex >= maxX) {
+        if (claws[0].hPosIndex >= maxX) {
           // Already at rightmost position. Do nothing.
           return;
         }
         console.log("move right");
-        claw.hPosIndex = claw.hPosIndex + 1;
+        claws[0].hPosIndex = claws[0].hPosIndex + 1;
         updatePositions();
       }
 
-      const openOrCloseClaw = (open) => {
+      const openOrCloseClaw = (claw, open) => {
         if (claw.clawOpen == open) {
           return;
         }
@@ -309,7 +202,8 @@
       }
 
       const clawClickHandler = (e) => {
-        openOrCloseClaw(!claw.clawOpen);
+        const claw = claws[0];
+        openOrCloseClaw(claw, !claw.clawOpen);
       }
 
       upButton.addEventListener("click", upClickHandler);
@@ -321,7 +215,6 @@
       updateDurations(1.0);
       updatePositions();
 
-      console.log("so far so good");
       statusMsg.innerText = "";
       
       const handleMessage = (msg) => {
@@ -351,10 +244,10 @@
         }
 
         if (!!newState.balls ) {
-          if (!!claw.ballInClaw) {
-            claw.ballHolderInClawElem.removeChild(claw.ballInClaw.wrapper);
-            claw.ballInClaw = null;
-          }
+          claws.forEach((claw) => {
+            deleteClaw(claw);
+          });
+          claws = [];
 
           balls.forEach((ball) => {
             moversSvg.removeChild(ball.wrapper);
@@ -366,14 +259,23 @@
           statusMsg.innerText =  `Virtual time elapsed: ${newState.elapsed.toFixed(2)} seconds ${newState.goal_accomplished ? "✅" : ""}`;
         }
 
-        if (!!newState.goal_accomplished) {
+        if (claws.length != newState.claws.length) {
+          claws.forEach((claw) => {
+            deleteClaw(claw);
+          });
+          claws = [];
 
+          newState.claws.forEach((_) => {
+            claws.push(createClaw());
+          });
         }
 
-        hPosIndex = newState.claw.pos.x;
-        vPosIndex = newState.claw.pos.y;
-        
-        openOrCloseClaw(newState.claw.open);
+        newState.claws.forEach((newClawState, index) => {
+          const claw = claws[index];
+          claw.hPosIndex = newClawState.pos.x;
+          claw.vPosIndex = newClawState.pos.y;
+          openOrCloseClaw(claw, newClawState.open);
+        });
 
         updatePositions();
       }
