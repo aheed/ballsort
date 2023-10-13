@@ -4,75 +4,7 @@
   <head>
     <meta charset="utf-8">
     <title>Ball Sorter</title>
-    <style>
-        :root {
-          --h-duration: 1s;
-          --v-duration: 1.5s;
-          --claw-duration: 0.3s;
-          --spotlight-duration: 0.4s;
-        }
-        .h-move {
-            transition: transform var(--h-duration);
-        }
-        .v-move {
-            transition: transform var(--v-duration);
-            transition-timing-function: ease-in-out;
-        }
-        .claw {
-          transition: transform var(--claw-duration);
-          transition-timing-function: ease-in;
-        }
-        button {
-          font-size: 40px;
-          position: absolute;
-        }
-        #button-container {
-          width: 100px;
-          height: 100px;
-          margin-left: 80px;
-          margin-top: 50px;
-        }
-
-        #move-up {
-          transform: translateY(-55px);
-        }
-
-        #move-down {
-          transform: translateY(55px);
-        }
-
-        #move-left {
-          transform: translateX(-68px);
-        }
-
-        #move-right {
-          transform: translateX(68px);
-        }
-
-        #backdrop {
-          z-index: -1;
-          position: absolute;
-        }
-
-        #spotlight {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 0, 0.6); /* Yellow with some transparency */
-            box-shadow: 0 0 20px 10px rgba(255, 255, 0, 0.6); /* Add blur effect */
-            position: absolute;
-            transition: transform var(--spotlight-duration);
-            transition-timing-function: cubic-bezier(.72,.09,.37,1.39);
-        }
-
-        #status-msg {
-          margin-top: 15px;
-          font-size: 20;
-          font-weight: "bold";
-          font-family: "arial";
-        }
-
-    </style>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <svg id="backdrop" height="500" width="500">
@@ -91,7 +23,16 @@
       <button id="claw-toggle" type="button">🤏</button>
     </div>
     <div id="status-msg">starting up...</div>
+    <script type="module" src="constants.js"></script>
+    <script type="module" src="backdrop.js"></script>
+    <script type="module" src="ball.js"></script>
+    <script type="module" src="claw.js"></script>
     <script type="module">
+      import {hDistance, vDistance, vTopSpace, originX, originY} from "./constants.js";
+      import {recreateBackdrop} from "./backdrop.js";
+      import {createBallWrapper, createBall} from "./ball.js";
+      import {createClaw, updateClawPosition, deleteClaw} from "./claw.js";
+
       const statusMsg = document.querySelector("#status-msg");
       const upButton = document.querySelector("#move-up");
       const downButton = document.querySelector("#move-down");
@@ -100,172 +41,33 @@
       const clawButton = document.querySelector("#claw-toggle");
       const moversSvg = document.querySelector("#movers-svg");
       const spotlight = document.querySelector("#spotlight");
-      const rootElem = document.querySelector(":root");
-      const backDrop = document.querySelector("#backdrop");
-      const hDistance = 60;
-      const vTopSpace = 100;
-      const vDistance = 40;
-      const vOffsetClaw = -25;
-      const vSportLightOffset = 51;
-      const hSportLightOffset = 30;
-      
-      const nofMovers = 20;
-      const cb0Min = 0.55;
-      const cb0Max = 0.95;
-      const cb1Min = 0.1;
-      const cb1Max = 0.1;
-      const cb2Min = 0.5;
-      const cb2Max = 0.6;
-      const cb3Min = 1.0;
-      const cb3Max = 1.4;
-      const originX = 50;
-      const originY = 70;
-      const clawOpenAngleDegrees = 58;
-      const clawClosedAngleDegrees = 25;
-      const ballHolderOffset = 24;
+      const rootElem = document.querySelector(":root");      
+      const vSpotLightOffset = 51;
+      const hSpotLightOffset = 30;
+
       const baseHDurationSeconds = 1.0;
       const baseVDurationSeconds = 1.5;
       const baseClawDurationSeconds = 0.3;
       const baseSpotlightDurationSeconds = 0.4;
 
-      let clawOpen = false;
+      let claws = [];
+      
       let maxX = 3;
       let maxY = 4;
-      let hPosIndex = 0;
-      let vPosIndex = 0;
+      
       let spotlightOn = false;
       let hSpotlightPosIndex = 0;
       let vSpotlightPosIndex = 0;
 
-      const ipol = (index, min, max, maxIndex) => min + index * (max - min) / maxIndex;
-      const ipolCurried = (min, max, maxIndex) => (index) => ipol(index, min, max, maxIndex);
-      const ipolCurriedMax = (maxIndex) => (min, max) => ipolCurried(min, max, maxIndex);
-      const ipolCurriedMaxFun = ipolCurriedMax(nofMovers - 1);
-      const ipFun0 = ipolCurriedMaxFun(cb0Min, cb0Max);
-      const ipFun1 = ipolCurriedMaxFun(cb1Min, cb1Max);
-      const ipFun2 = ipolCurriedMaxFun(cb2Min, cb2Max);
-      const ipFun3 = ipolCurriedMaxFun(cb3Min, cb3Max);
-      let clawLeft;
-      let clawRight;
+      // temp
+      const claw0 = createClaw();
+      claws.push(claw0);
+      const claw1 = createClaw();
+      claw1.hPosIndex = 3;
+      claws.push(claw1);
+      // end temp
 
-      const setClawAttributes = (elem) => {
-        elem.setAttribute('fill', "none");
-        elem.setAttribute('stroke', "black");
-        elem.setAttribute('stroke-width', "8");
-        elem.setAttribute('transform-origin', `${originX}px ${originY}px`);
-        elem.classList.add('claw');
-      }
 
-      const hMovers = [];
-      const vMovers = [];
-      let ballHolderInClawElem;
-      for (let i=0; i<nofMovers; i++) {
-        const vMover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        vMover.classList.add('v-move');
-        vMovers.push(vMover);
-        let mover;
-        if (i < (nofMovers - 1)) {
-          mover = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-          mover.setAttribute('stroke', 'none');
-          mover.setAttribute('fill', 'black');
-          mover.setAttribute('cx', `${originX}`);
-          mover.setAttribute('cy', `${originY}`);
-          mover.setAttribute('r', '11');
-          mover.setAttribute('stroke-width', '3');
-        }
-        else {
-          mover = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-          const ballHolder = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-          ballHolder.style.transform = `translateY(${ballHolderOffset}px)`;
-          mover.appendChild(ballHolder);
-          ballHolderInClawElem = ballHolder;
-          vMover.classList.add('claw-wrapper');
-          clawRight = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-          clawRight.setAttribute('id', "claw-right");
-          clawRight.setAttribute('d', `M${originX},${originY} a20,20 0 0,1 0,40`);
-          setClawAttributes(clawRight);
-          mover.appendChild(clawRight);
-
-          clawLeft = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-          clawLeft.setAttribute('id', "claw-left");
-          clawLeft.setAttribute('d', `M${originX},${originY} a20,20 0 0,0 0,40`);
-          setClawAttributes(clawLeft);
-          mover.appendChild(clawLeft);
-
-          const clawHinge = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-          clawHinge.setAttribute('fill', 'black');
-          clawHinge.setAttribute('cx', `${originX}`);
-          clawHinge.setAttribute('cy', `${originY - 2}`);
-          clawHinge.setAttribute('r', '6');
-          clawHinge.setAttribute('stroke', 'none');
-          mover.appendChild(clawHinge);
-
-          const clawBolt = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-          clawBolt.setAttribute('fill', 'white');
-          clawBolt.setAttribute('cx', `${originX}`);
-          clawBolt.setAttribute('cy', `${originY - 2}`);
-          clawBolt.setAttribute('r', '2');
-          clawBolt.setAttribute('stroke', 'none');
-          mover.appendChild(clawBolt);
-        }
-        const transFun = `cubic-bezier(${ipFun0(i)}, ${ipFun1(i)}, ${ipFun2(i)}, ${ipFun3(i)}`;
-        mover.style['transition-timing-function'] = transFun;
-        mover.classList.add('h-move');
-        hMovers.push(mover);
-        vMover.appendChild(mover);
-      }
-
-      vMovers.forEach(vMover => {
-        moversSvg.appendChild(vMover);
-      });
-
-      const createBallCircle = (color) => {
-        const ret = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-        ret.setAttribute('stroke', 'black');
-        ret.setAttribute('fill', color);
-        ret.setAttribute('cx', `${originX}`);
-        ret.setAttribute('cy', `${originY}`);
-        ret.setAttribute('r', '18');
-        ret.setAttribute('stroke-width', '2');
-        ret.classList.add('ball');
-        return ret;
-      }
-
-      const createBallLabel = (text) => {
-        const ret = document.createElementNS("http://www.w3.org/2000/svg", 'text');
-        ret.setAttribute('x', `${originX-6}`);
-        ret.setAttribute('y', `${originY+6}`);
-        ret.setAttribute("font-size", "20");
-        ret.setAttribute("font-weight", "bold");
-        ret.setAttribute("font-family", "arial");
-
-        const tspan = document.createElementNS("http://www.w3.org/2000/svg", 'tspan');
-        tspan.setAttribute("dx", "6");
-        tspan.textContent = text;
-        tspan.style['text-align'] = "center";
-        tspan.style['text-anchor'] = "middle";
-
-        ret.appendChild(tspan);
-        return ret;
-      }
-
-      const createBallWrapper = (color, text) => {
-        const grayBall = createBallCircle('lightgray');
-        const coloredBall = createBallCircle(color);
-        const label = createBallLabel(text);
-        const wrapper = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        wrapper.classList.add('ball-wrapper');
-        wrapper.appendChild(grayBall);
-        wrapper.appendChild(coloredBall);
-        wrapper.appendChild(label);
-        return wrapper;
-      }
-
-      const createBall = (hIndex, vIndex, color, text) => {
-        const wrapper = createBallWrapper(color, text);
-        moversSvg.appendChild(wrapper);
-        return {hIndex: hIndex, vIndex: vIndex, wrapper: wrapper, color: color, text: text};
-      }
 
       const createBallInClaw = (color, text) => {
         const wrapper = createBallWrapper(color, text);
@@ -273,8 +75,6 @@
       }
 
       let balls = [];
-      let ballInClaw;
-
       
       balls.push(createBall(0, 1, 'lightblue', '?'));
       balls.push(createBall(0, 2, 'red', '0'));
@@ -285,79 +85,15 @@
       balls.push(createBall(3, 4, 'green', 'x'));
 
       /*ballInClaw = createBallInClaw('orange');
-      ballHolderInClawElem.appendChild(ballInClaw.wrapper);
+      claw.ballHolderInClawElem.appendChild(claw.ballInClaw.wrapper);
       */
 
       /*let highlights =[
         {xMin: 2, xMax: 3, yMin:2, yMax:3, color: "lightblue"},
         {xMin: 0, xMax: 0, yMin:0, yMax:3, color: "lightyellow"}];*/
       let highlights =[];
-
-      const createHighlight = ({xMin, xMax, yMin, yMax, color}) => {
-        for (let xIndex=xMin; xIndex<=xMax; xIndex++) {
-          const rectLeftSpace = 50;
-          const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
-
-          for (let yIndex=yMin; yIndex<=yMax; yIndex++) {
-            const rectTopSpace = vTopSpace + 51;
-            const y = rectTopSpace + yIndex * vDistance;
-            let rectangle = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
-            rectangle.setAttribute('x', `${x}`);
-            rectangle.setAttribute('y', `${y}`);
-            rectangle.setAttribute('width', `${hDistance - 1}`);
-            rectangle.setAttribute('height', `${vDistance - 1}`);
-            rectangle.setAttribute('fill', color);
-            backDrop.appendChild(rectangle);
-          }
-        }
-      }
-
-      const createGridLabels = () => {
-
-        for (let xIndex=0; xIndex<=maxX; xIndex++) {
-          const rectLeftSpace = 50;
-          const x = rectLeftSpace + (xIndex - 0.5) * hDistance;
-          const y = vTopSpace + 52 + vDistance * maxY;
-
-          var text = document.createElementNS("http://www.w3.org/2000/svg", "text");          
-          text.setAttribute('x', `${x + 22}`);
-          text.setAttribute('y', `${y + 59}`);
-          text.textContent = `${xIndex}`;
-          text.setAttribute("font-size", "24");
-          backDrop.appendChild(text);
-        }
-
-        for (let yIndex=0; yIndex<=maxY; yIndex++) {
-          const rectLeftSpace = 20;
-          const x = rectLeftSpace;
-          const rectTopSpace = vTopSpace + 51;
-          const y = rectTopSpace + yIndex * vDistance;
-
-          var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          text.setAttribute('x', `${x - 20}`);
-          text.setAttribute('y', `${y + 25}`);
-          text.textContent = `${yIndex}`;
-          text.setAttribute("font-size", "24");
-          
-          backDrop.appendChild(text);
-        }
-      }
-
-      const recreateBackdrop = () => {
-
-        while (backDrop.firstChild) {
-          backDrop.removeChild(backDrop.firstChild);
-        }
-
-        createHighlight({xMin: 0, xMax: maxX, yMin:0, yMax:maxY, color: "lightgray"});
-
-        highlights.forEach(highlight => {
-          createHighlight(highlight);
-        }); 
-        createGridLabels();
-      }
-
-      recreateBackdrop();
+      
+      recreateBackdrop(maxX, maxY, highlights);
 
       const updateDurations = (multiplier) => {
         rootElem.style.setProperty('--h-duration', `${baseHDurationSeconds * multiplier}s`);
@@ -368,30 +104,13 @@
 
 
       const updatePositions = () => {
-        const hPos = hPosIndex * hDistance;
-        console.log(`hPosIx: ${hPosIndex} vPosIx: ${vPosIndex} hPos:${hPos}`);
-        const vPosFun = ipolCurried(0, vTopSpace + vOffsetClaw + vPosIndex * vDistance, vMovers.length - 2);
-        hMovers.forEach((mover, i) => {
-            mover.style.transform = `translateX(${hPos}px)`;
+        claws.forEach((claw) => {
+          updateClawPosition(claw);
         });
-        vMovers.forEach((mover, i) => {
-          let index = i;
-          let offset = -15;
-          if (mover.classList.contains('claw-wrapper')) {
-            index = index - 1;
-            offset = 1;
-          }
-
-          let vPos = vPosFun(index) + offset;
-          mover.style.transform = `translateY(${vPos}px)`;
-        });
-        const clawAngleDegrees = clawOpen ? clawOpenAngleDegrees : clawClosedAngleDegrees;
-        clawRight.style.transform = `rotate(${-clawAngleDegrees}deg)`;
-        clawLeft.style.transform = `rotate(${clawAngleDegrees}deg)`;
 
         spotlight.style.visibility = spotlightOn ? "visible" : "hidden";
-        const spotLightX = hSportLightOffset + hSpotlightPosIndex * hDistance;
-        const spotLightY = vTopSpace + vSportLightOffset + vSpotlightPosIndex * vDistance;
+        const spotLightX = hSpotLightOffset + hSpotlightPosIndex * hDistance;
+        const spotLightY = vTopSpace + vSpotLightOffset + vSpotlightPosIndex * vDistance;
         spotlight.style.transform = `translate(${spotLightX}px, ${spotLightY}px)`;
 
         balls.forEach((ball) => {
@@ -402,65 +121,65 @@
       }
 
       const downClickHandler = (e) => {
-        if (vPosIndex >= maxY) {
+        if (claws[0].vPosIndex >= maxY) {
           // Already at bottom. Do nothing.
           return;
         }
         console.log("move down");
-        vPosIndex = vPosIndex + 1;
+        claws[0].vPosIndex = claws[0].vPosIndex + 1;
         updatePositions();
       }
 
       const upClickHandler = (e) => {
-        if (vPosIndex == 0) {
+        if (claws[0].vPosIndex == 0) {
           // Already at top. Do nothing.
           return;
         }
         console.log("move up");
-        vPosIndex = vPosIndex - 1;
+        claws[0].vPosIndex = claws[0].vPosIndex - 1;
         updatePositions();
       }
 
       const leftClickHandler = (e) => {
-        if (hPosIndex == 0) {
+        if (claws[0].hPosIndex == 0) {
           // Already at leftmost position. Do nothing.
           return;
         }
         console.log("move left");
-        hPosIndex = hPosIndex - 1;
+        claws[0].hPosIndex = claws[0].hPosIndex - 1;
         updatePositions();
       }
 
       const rightClickHandler = (e) => {
-        if (hPosIndex >= maxX) {
+        if (claws[0].hPosIndex >= maxX) {
           // Already at rightmost position. Do nothing.
           return;
         }
         console.log("move right");
-        hPosIndex = hPosIndex + 1;
+        claws[0].hPosIndex = claws[0].hPosIndex + 1;
         updatePositions();
       }
 
-      const openOrCloseClaw = (open) => {
-        if (clawOpen == open) {
+      const openOrCloseClaw = (claw, open) => {
+        if (claw.clawOpen == open) {
           return;
         }
 
-        clawOpen = !clawOpen;
-        if(clawOpen) {
-          if (!!ballInClaw) {
+        claw.clawOpen = !claw.clawOpen;
+        if(claw.clawOpen) {
+          if (!!claw.ballInClaw) {
             console.log("Dropping ball");
-            balls.push(createBall(hPosIndex, vPosIndex, ballInClaw.color, ballInClaw.text));
-            ballHolderInClawElem.removeChild(ballInClaw.wrapper);
-            ballInClaw = null;
+            balls.push(createBall(claw.hPosIndex, claw.vPosIndex, claw.ballInClaw.color, claw.ballInClaw.text));
+            claw.ballHolderInClawElem.removeChild(claw.ballInClaw.wrapper);
+            claw.ballInClaw = null;
           }
         }
         else {
-          const ballToGrab = balls.find((ball) => ball.hIndex == hPosIndex && ball.vIndex == vPosIndex);
+          const ballToGrab = balls.find((ball) => ball.hIndex == claw.hPosIndex && ball.vIndex == claw.vPosIndex);
           if (!!ballToGrab) {
             console.log("Grabbing ball");
-            ballInClaw = createBallInClaw(ballToGrab.color, ballToGrab.text);
-            ballHolderInClawElem.appendChild(ballInClaw.wrapper);
+            claw.ballInClaw = createBallInClaw(ballToGrab.color, ballToGrab.text);
+            claw.ballHolderInClawElem.appendChild(claw.ballInClaw.wrapper);
             moversSvg.removeChild(ballToGrab.wrapper);
             balls = balls.filter((ball) => ball != ballToGrab);
           }
@@ -469,7 +188,8 @@
       }
 
       const clawClickHandler = (e) => {
-        openOrCloseClaw(!clawOpen);
+        const claw = claws[0];
+        openOrCloseClaw(claw, !claw.clawOpen);
       }
 
       upButton.addEventListener("click", upClickHandler);
@@ -481,7 +201,6 @@
       updateDurations(1.0);
       updatePositions();
 
-      console.log("so far so good");
       statusMsg.innerText = "";
       
       const handleMessage = (msg) => {
@@ -496,12 +215,12 @@
         if (!!newState.max_x) {
           maxX = newState.max_x;
           maxY = newState.max_y;
-          recreateBackdrop();
+          recreateBackdrop(maxX, maxY, highlights);
         }
 
         if (!!newState.highlights) {
           highlights = newState.highlights;
-          recreateBackdrop();
+          recreateBackdrop(maxX, maxY, highlights);
         }
 
         if (!!newState.spotlight) {
@@ -511,10 +230,10 @@
         }
 
         if (!!newState.balls ) {
-          if (!!ballInClaw) {
-            ballHolderInClawElem.removeChild(ballInClaw.wrapper);
-            ballInClaw = null;
-          }
+          claws.forEach((claw) => {
+            deleteClaw(claw);
+          });
+          claws = [];
 
           balls.forEach((ball) => {
             moversSvg.removeChild(ball.wrapper);
@@ -526,14 +245,23 @@
           statusMsg.innerText =  `Virtual time elapsed: ${newState.elapsed.toFixed(2)} seconds ${newState.goal_accomplished ? "✅" : ""}`;
         }
 
-        if (!!newState.goal_accomplished) {
+        if (claws.length != newState.claws.length) {
+          claws.forEach((claw) => {
+            deleteClaw(claw);
+          });
+          claws = [];
 
+          newState.claws.forEach((_) => {
+            claws.push(createClaw());
+          });
         }
 
-        hPosIndex = newState.claw.pos.x;
-        vPosIndex = newState.claw.pos.y;
-        
-        openOrCloseClaw(newState.claw.open);
+        newState.claws.forEach((newClawState, index) => {
+          const claw = claws[index];
+          claw.hPosIndex = newClawState.pos.x;
+          claw.vPosIndex = newClawState.pos.y;
+          openOrCloseClaw(claw, newClawState.open);
+        });
 
         updatePositions();
       }
