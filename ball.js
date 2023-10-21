@@ -42,7 +42,7 @@ export const createBallWrapper = (color, text) => {
   return wrapper;
 };
 
-export const createBall = (hIndex, vIndex, color, text) => {
+export const createBall = (hIndex, vIndex, color, text, id) => {
   const moversSvg = document.querySelector("#movers-svg");
   const wrapper = createBallWrapper(color, text);
   moversSvg.appendChild(wrapper);
@@ -52,5 +52,6 @@ export const createBall = (hIndex, vIndex, color, text) => {
     wrapper: wrapper,
     color: color,
     text: text,
+    id: id
   };
 };

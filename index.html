@@ -69,9 +69,9 @@
 
 
 
-      const createBallInClaw = (color, text) => {
+      const createBallInClaw = (color, text, id) => {
         const wrapper = createBallWrapper(color, text);
-        return {wrapper: wrapper, color: color, text: text};
+        return {wrapper: wrapper, color: color, text: text, id: id};
       }
 
       let balls = [];
@@ -169,7 +169,7 @@
         if(claw.clawOpen) {
           if (!!claw.ballInClaw) {
             console.log("Dropping ball");
-            balls.push(createBall(claw.hPosIndex, claw.vPosIndex, claw.ballInClaw.color, claw.ballInClaw.text));
+            balls.push(createBall(claw.hPosIndex, claw.vPosIndex, claw.ballInClaw.color, claw.ballInClaw.text, claw.ballInClaw.id));
             claw.ballHolderInClawElem.removeChild(claw.ballInClaw.wrapper);
             claw.ballInClaw = null;
           }
@@ -178,7 +178,7 @@
           const ballToGrab = balls.find((ball) => ball.hIndex == claw.hPosIndex && ball.vIndex == claw.vPosIndex);
           if (!!ballToGrab) {
             console.log("Grabbing ball");
-            claw.ballInClaw = createBallInClaw(ballToGrab.color, ballToGrab.text);
+            claw.ballInClaw = createBallInClaw(ballToGrab.color, ballToGrab.text, ballToGrab.id);
             claw.ballHolderInClawElem.appendChild(claw.ballInClaw.wrapper);
             moversSvg.removeChild(ballToGrab.wrapper);
             balls = balls.filter((ball) => ball != ballToGrab);
@@ -238,7 +238,7 @@
           balls.forEach((ball) => {
             moversSvg.removeChild(ball.wrapper);
           });
-          balls = newState.balls.map((ball) => createBall(ball.pos.x, ball.pos.y, ball.color, ball.label));
+          balls = newState.balls.map((ball) => createBall(ball.pos.x, ball.pos.y, ball.color, ball.label, ball.id));
         }
 
         if (!!newState.elapsed) {
