@@ -30,7 +30,7 @@
     <script type="module">
       import {hDistance, vDistance, vTopSpace, originX, originY} from "./constants.js";
       import {recreateBackdrop} from "./backdrop.js";
-      import {createBallWrapper, createBall} from "./ball.js";
+      import {createBallWrapper, createBall, updateBall} from "./ball.js";
       import {createClaw, updateClawPosition, deleteClaw} from "./claw.js";
 
       const statusMsg = document.querySelector("#status-msg");
@@ -69,20 +69,32 @@
 
 
 
-      const createBallInClaw = (color, text) => {
+      const createBallInClaw = (color, text, id) => {
         const wrapper = createBallWrapper(color, text);
-        return {wrapper: wrapper, color: color, text: text};
+        return {wrapper: wrapper, color: color, text: text, id: id};
       }
 
       let balls = [];
+
+      const updateBallById = (srcBall) => {
+        const targetBall = balls.find((candidate) => candidate.id == srcBall.id);
+        if (targetBall) {
+          targetBall.color = srcBall.color;
+          targetBall.text = srcBall.label;
+          updateBall(targetBall);
+        }
+        else {
+          balls.push(createBall(srcBall.pos.x, srcBall.pos.y, srcBall.color, srcBall.label, srcBall.id));
+        }
+      }
       
-      balls.push(createBall(0, 1, 'lightblue', '?'));
-      balls.push(createBall(0, 2, 'red', '0'));
-      balls.push(createBall(0, 3, 'pink', '12'));
-      balls.push(createBall(0, 4, 'green', '233'));
-      balls.push(createBall(1, 4, 'green', 'A'));
-      balls.push(createBall(2, 4, 'lightyellow', '🍄'));
-      balls.push(createBall(3, 4, 'green', 'x'));
+      balls.push(createBall(0, 1, 'lightblue', '?', 'a'));
+      balls.push(createBall(0, 2, 'red', '0', 'b'));
+      balls.push(createBall(0, 3, 'pink', '12', 'c'));
+      balls.push(createBall(0, 4, 'green', '233', 'd'));
+      balls.push(createBall(1, 4, 'green', 'A', 'e'));
+      balls.push(createBall(2, 4, 'lightyellow', '🍄', 'f'));
+      balls.push(createBall(3, 4, 'green', 'x', 'g'));
 
       /*ballInClaw = createBallInClaw('orange');
       claw.ballHolderInClawElem.appendChild(claw.ballInClaw.wrapper);
@@ -169,7 +181,7 @@
         if(claw.clawOpen) {
           if (!!claw.ballInClaw) {
             console.log("Dropping ball");
-            balls.push(createBall(claw.hPosIndex, claw.vPosIndex, claw.ballInClaw.color, claw.ballInClaw.text));
+            balls.push(createBall(claw.hPosIndex, claw.vPosIndex, claw.ballInClaw.color, claw.ballInClaw.text, claw.ballInClaw.id));
             claw.ballHolderInClawElem.removeChild(claw.ballInClaw.wrapper);
             claw.ballInClaw = null;
           }
@@ -178,7 +190,7 @@
           const ballToGrab = balls.find((ball) => ball.hIndex == claw.hPosIndex && ball.vIndex == claw.vPosIndex);
           if (!!ballToGrab) {
             console.log("Grabbing ball");
-            claw.ballInClaw = createBallInClaw(ballToGrab.color, ballToGrab.text);
+            claw.ballInClaw = createBallInClaw(ballToGrab.color, ballToGrab.text, ballToGrab.id);
             claw.ballHolderInClawElem.appendChild(claw.ballInClaw.wrapper);
             moversSvg.removeChild(ballToGrab.wrapper);
             balls = balls.filter((ball) => ball != ballToGrab);
@@ -230,15 +242,26 @@
         }
 
         if (!!newState.balls ) {
-          claws.forEach((claw) => {
-            deleteClaw(claw);
-          });
-          claws = [];
 
-          balls.forEach((ball) => {
-            moversSvg.removeChild(ball.wrapper);
+          newState.balls.forEach((ball) => {
+            updateBallById(ball);
           });
-          balls = newState.balls.map((ball) => createBall(ball.pos.x, ball.pos.y, ball.color, ball.label));
+
+          balls = balls.filter((ball) => {
+            if (!newState.balls.find((candidate) => candidate.id == ball.id)) {
+              moversSvg.removeChild(ball.wrapper);
+              return false;
+            }
+            return true;
+          });
+
+          for (let i = 0; i < newState.claws.length; i++) {
+            const srcClaw = newState.claws[i];
+            if (srcClaw.ball) {
+              // assume a ball with matching id already exists in corresponding claw
+              updateBall({wrapper: claws[i].ballInClaw.wrapper, color: srcClaw.ball.color, text: srcClaw.ball.label});
+            }
+          };
         }
 
         if (!!newState.elapsed) {
