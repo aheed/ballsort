@@ -31,12 +31,10 @@ const _createBallLabel = (text) => {
 };
 
 export const createBallWrapper = (color, text) => {
-  const grayBall = _createBallCircle("lightgray");
   const coloredBall = _createBallCircle(color);
   const label = _createBallLabel(text);
   const wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
   wrapper.classList.add("ball-wrapper");
-  wrapper.appendChild(grayBall);
   wrapper.appendChild(coloredBall);
   wrapper.appendChild(label);
   return wrapper;
@@ -55,3 +53,10 @@ export const createBall = (hIndex, vIndex, color, text, id) => {
     id: id
   };
 };
+
+export const updateBall = ({wrapper, color, text}) => {
+  const circle = wrapper.querySelector("circle");
+  circle.setAttribute("fill", color);
+  const tspan = wrapper.querySelector("tspan");
+  tspan.textContent = text;
+}
