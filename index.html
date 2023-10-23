@@ -259,7 +259,9 @@
             const srcClaw = newState.claws[i];
             if (srcClaw.ball) {
               // assume a ball with matching id already exists in corresponding claw
-              updateBall({wrapper: claws[i].ballInClaw.wrapper, color: srcClaw.ball.color, text: srcClaw.ball.label});
+              claws[i].ballInClaw.color = srcClaw.ball.color;
+              claws[i].ballInClaw.text = srcClaw.ball.label;
+              updateBall(claws[i].ballInClaw);
             }
           };
         }
